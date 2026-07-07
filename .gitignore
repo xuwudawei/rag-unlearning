@@ -1,0 +1,23 @@
+# Secrets — never commit
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Run artifacts
+results.json
+robustness.json
+*.log
+
+# Model / HF cache (large)
+.cache/
+*.safetensors
+*.bin
+
+# OS
+.DS_Store
