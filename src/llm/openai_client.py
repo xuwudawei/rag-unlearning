@@ -17,7 +17,7 @@ class OpenAIClient:
                 "OPENAI_API_KEY is not set. Export it or add it to a .env file "
                 "before using the openai provider."
             )
-        # Imported lazily so the mock provider works without the SDK configured.
+        # Imported lazily so other providers don't require the OpenAI SDK.
         from openai import OpenAI
 
         self._client = OpenAI(api_key=cfg.api_key)

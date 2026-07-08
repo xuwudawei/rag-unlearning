@@ -15,10 +15,7 @@ def build_client(cfg):
     if provider == "openai":
         from .openai_client import OpenAIClient
         return OpenAIClient(cfg)
-    if provider == "mock":
-        from .mock_client import MockClient  # tests only, not a real backend
-        return MockClient(cfg)
-    raise LLMError(f"Unknown provider '{cfg.provider}'. Use 'hf', 'openai', or 'mock'.")
+    raise LLMError(f"Unknown provider '{cfg.provider}'. Use 'hf', 'deepseek', or 'openai'.")
 
 
 def helper_generate(client, model: str, system: str, user: str) -> str:

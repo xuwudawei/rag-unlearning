@@ -62,9 +62,12 @@ UNLEARN_PROVIDER=hf python scripts/run_unlearn.py     # downloads ~6GB first run
 # ---- GPT-4o (closest to the paper) ----
 UNLEARN_PROVIDER=openai OPENAI_API_KEY=sk-... python scripts/run_unlearn.py
 
-# tests (fast, no key)
-python -m pytest tests/ -q
+# tests: pure-logic (no LLM) + real integration (live model, skipped without a key)
+python -m pytest tests/test_logic.py -q
+UNLEARN_PROVIDER=deepseek DEEPSEEK_API_KEY=sk-... python -m pytest tests/test_integration.py -v
 ```
+
+There is **no mock backend** — the integration tests make real API calls or are skipped.
 
 ### Web UI
 

@@ -13,7 +13,7 @@ load_dotenv()
 class LLMConfig:
     """Target/helper/judge model settings. Frozen: config is immutable at runtime."""
 
-    provider: str = os.getenv("UNLEARN_PROVIDER", "hf")  # "hf" | "openai" | "mock"
+    provider: str = os.getenv("UNLEARN_PROVIDER", "hf")  # "hf" | "deepseek" | "openai"
     # Local (hf) defaults: an ungated instruct model as LLM_un, matching the
     # paper's open-source track (they use Llama-2-7b-chat). Override via env.
     target_model: str = os.getenv("UNLEARN_TARGET_MODEL", "Qwen/Qwen2.5-3B-Instruct")
@@ -56,7 +56,6 @@ _PROVIDER_DEFAULTS = {
     "hf": ("Qwen/Qwen2.5-3B-Instruct", "sentence-transformers/all-MiniLM-L6-v2", None),
     "deepseek": ("deepseek-chat", "sentence-transformers/all-MiniLM-L6-v2", "DEEPSEEK_API_KEY"),
     "openai": ("gpt-4o", "text-embedding-3-small", "OPENAI_API_KEY"),
-    "mock": ("mock", "mock", None),
 }
 
 

@@ -1,4 +1,4 @@
-"""Real local LLM backend (HuggingFace transformers) — no API key, no mock.
+"""Real local LLM backend (HuggingFace transformers) — no API key required.
 
 Serves as the target model LLM_un (and, in the closed-source-free setting, also the
 helper LLM_cons and the judge). Runs on Apple Silicon MPS / CUDA / CPU. Exposes
