@@ -12,6 +12,7 @@ venv/
 # Run artifacts
 results.json
 robustness.json
+estimator.json
 *.log
 
 # Model / HF cache (large)

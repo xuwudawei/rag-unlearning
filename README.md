@@ -69,6 +69,25 @@ UNLEARN_PROVIDER=deepseek DEEPSEEK_API_KEY=sk-... python -m pytest tests/test_in
 
 There is **no mock backend** — the integration tests make real API calls or are skipped.
 
+### AI Answer Estimator (the innovation MVP)
+
+Inverts the paper: instead of suppressing an answer in a KB you own, it measures and
+corrects what a model says about an entity over a retrievable source surface.
+
+```bash
+UNLEARN_PROVIDER=deepseek DEEPSEEK_API_KEY=sk-... python scripts/run_estimator.py
+```
+For an entity + a false claim it (1) measures how often the model asserts the claim,
+(2) attributes which sources drive it (leave-one-out), (3) predicts the cheapest
+**legitimate** intervention that corrects it — writing `estimator.json`.
+
+**Status (honest):** the baseline measurement and the intervention recommendation
+are stable and correct (e.g. "publish an owned corrective statement → claim rate
+80%→0%, lowest cost"). The per-source causal attribution is a **v0.1 and noisy** at
+5 query variants + a nondeterministic model — it needs statistical hardening (more
+variants, repeated sampling with confidence intervals, Shapley instead of naive
+leave-one-out). Do not trust individual source-influence numbers yet.
+
 ### Web UI
 
 ```bash
