@@ -2,403 +2,474 @@
 <style>
   :root{
     --bg:#eceff2; --panel:#fbfcfd; --sunk:#f1f4f6; --ink:#181b20; --muted:#5c646e;
-    --line:#d7dce2; --hair:#c6ccd4; --accent:#8c2f39; --accent-soft:#8c2f3915;
-    --good:#2f7150; --good-soft:#2f715015; --warn:#8a6412; --warn-soft:#8a641215;
+    --line:#d7dce2; --hair:#c6ccd4; --accent:#8c2f39; --accent-soft:#8c2f3914;
+    --good:#2f7150; --good-soft:#2f715014; --warn:#8a6412; --warn-soft:#8a641214;
     --serif:Georgia,'Iowan Old Style','Times New Roman',serif;
     --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,sans-serif;
     --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
   }
   @media (prefers-color-scheme:dark){
-    :root{ --bg:#0d0f12; --panel:#15181d; --sunk:#1b1f25; --ink:#e8ebef; --muted:#98a1ac;
-      --line:#282d34; --hair:#333941; --accent:#cf6a72; --accent-soft:#cf6a7218;
-      --good:#5bb487; --good-soft:#5bb48718; --warn:#cf9a3f; --warn-soft:#cf9a3f18; }
+    :root{ --bg:#0d0f12; --panel:#15181d; --sunk:#1c2027; --ink:#e8ebef; --muted:#98a1ac;
+      --line:#282d34; --hair:#39404a; --accent:#cf6a72; --accent-soft:#cf6a721e;
+      --good:#5bb487; --good-soft:#5bb4871e; --warn:#cf9a3f; --warn-soft:#cf9a3f1e; }
   }
-  :root[data-theme="dark"]{ --bg:#0d0f12; --panel:#15181d; --sunk:#1b1f25; --ink:#e8ebef; --muted:#98a1ac;
-    --line:#282d34; --hair:#333941; --accent:#cf6a72; --accent-soft:#cf6a7218;
-    --good:#5bb487; --good-soft:#5bb48718; --warn:#cf9a3f; --warn-soft:#cf9a3f18; }
+  :root[data-theme="dark"]{ --bg:#0d0f12; --panel:#15181d; --sunk:#1c2027; --ink:#e8ebef; --muted:#98a1ac;
+    --line:#282d34; --hair:#39404a; --accent:#cf6a72; --accent-soft:#cf6a721e;
+    --good:#5bb487; --good-soft:#5bb4871e; --warn:#cf9a3f; --warn-soft:#cf9a3f1e; }
   :root[data-theme="light"]{ --bg:#eceff2; --panel:#fbfcfd; --sunk:#f1f4f6; --ink:#181b20; --muted:#5c646e;
-    --line:#d7dce2; --hair:#c6ccd4; --accent:#8c2f39; --accent-soft:#8c2f3915;
-    --good:#2f7150; --good-soft:#2f715015; --warn:#8a6412; --warn-soft:#8a641215; }
+    --line:#d7dce2; --hair:#c6ccd4; --accent:#8c2f39; --accent-soft:#8c2f3914;
+    --good:#2f7150; --good-soft:#2f715014; --warn:#8a6412; --warn-soft:#8a641214; }
 
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);
-    display:flex;align-items:center;justify-content:center;overflow:hidden;
-    -webkit-font-smoothing:antialiased;}
-  .deck{width:min(96vw,1080px);aspect-ratio:16/9;position:relative;}
+    display:flex;align-items:center;justify-content:center;overflow:hidden;-webkit-font-smoothing:antialiased;}
+  .deck{width:min(96vw,1120px);aspect-ratio:16/9;position:relative;}
   .slide{position:absolute;inset:0;background:var(--panel);border:1px solid var(--line);
-    padding:clamp(20px,3vw,42px) clamp(24px,3.6vw,52px);
-    display:none;flex-direction:column;overflow:hidden;
-    box-shadow:0 24px 60px -30px #000a;}
+    padding:clamp(16px,2.4vw,30px) clamp(22px,3.2vw,44px) clamp(14px,2vw,24px);
+    display:none;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px -30px #000a;}
   .slide.active{display:flex;}
   @media (prefers-reduced-motion:no-preference){
-    .slide.active{animation:rise .34s cubic-bezier(.2,.7,.2,1);}
+    .slide.active{animation:rise .32s cubic-bezier(.2,.7,.2,1);}
     @keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
   }
-
-  /* running head, like a journal */
-  .rhead{display:flex;justify-content:space-between;align-items:baseline;
-    font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--muted);padding-bottom:.5rem;border-bottom:1px solid var(--hair);}
+  .rhead{display:flex;justify-content:space-between;align-items:baseline;flex:0 0 auto;
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);padding-bottom:.4rem;border-bottom:1px solid var(--hair);}
   .rhead .sec{color:var(--accent);font-weight:600;}
   .rhead .idx b{color:var(--ink);}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.25rem,2.7vw,1.85rem);
+    line-height:1.1;margin:.55rem 0 .1rem;text-wrap:balance;letter-spacing:-.01em;flex:0 0 auto;}
+  .cap{color:var(--muted);font-size:clamp(.82rem,1.25vw,.95rem);line-height:1.4;max-width:76ch;
+    margin:.15rem 0 0;flex:0 0 auto;}
+  .diagram{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;padding-top:.3rem;}
+  .diagram svg{width:100%;height:100%;display:block;}
 
-  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;
-    text-transform:uppercase;color:var(--accent);font-weight:600;margin-top:1rem;}
-  h1{font-family:var(--serif);font-weight:600;text-wrap:balance;line-height:1.06;
-    letter-spacing:-.01em;margin:.4rem 0;}
-  h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.4rem,3.1vw,2.15rem);
-    line-height:1.1;margin:.35rem 0 .2rem;text-wrap:balance;letter-spacing:-.01em;}
-  p,li{color:var(--ink);line-height:1.5;}
-  .sub{color:var(--muted);}
-  .body{flex:1;display:flex;flex-direction:column;gap:.85rem;justify-content:center;}
-  .lede{font-size:clamp(.98rem,1.55vw,1.16rem);max-width:62ch;color:var(--muted);line-height:1.46;}
+  svg .box{fill:var(--sunk);stroke:var(--hair);stroke-width:1.5;}
+  svg .box.hl{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2;}
+  svg .box.good{fill:var(--good-soft);stroke:var(--good);stroke-width:2;}
+  svg .box.warn{fill:var(--warn-soft);stroke:var(--warn);stroke-width:2;}
+  svg .t{fill:var(--ink);font-family:var(--sans);font-weight:600;}
+  svg .tm{fill:var(--muted);font-family:var(--mono);}
+  svg .ta{fill:var(--accent);font-family:var(--mono);font-weight:700;}
+  svg .tg{fill:var(--good);font-family:var(--mono);font-weight:700;}
+  svg .tw{fill:var(--warn);font-family:var(--mono);font-weight:700;}
+  svg .big{fill:var(--ink);font-family:var(--mono);font-weight:700;letter-spacing:-.02em;}
+  svg .ln{stroke:var(--muted);stroke-width:1.7;fill:none;}
+  svg .ln.a{stroke:var(--accent);stroke-width:2;}
+  svg .ln.g{stroke:var(--good);stroke-width:2;}
+  svg .dash{stroke:var(--hair);stroke-width:1.2;stroke-dasharray:4 5;fill:none;}
+  svg .track{fill:var(--sunk);stroke:var(--hair);stroke-width:1;}
+  svg .bar{fill:var(--accent);} svg .bar.g{fill:var(--good);} svg .bar.m{fill:var(--hair);}
+  svg .ahp{fill:var(--muted);} svg .ahpa{fill:var(--accent);} svg .ahpg{fill:var(--good);}
 
-  ul{margin:.1rem 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:.6rem;}
-  ul li{position:relative;padding-left:1.3rem;max-width:70ch;font-size:clamp(.9rem,1.35vw,1.03rem);}
-  ul li::before{content:"";position:absolute;left:0;top:.66em;width:.5rem;height:2px;background:var(--accent);}
+  .rfoot{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;
+    padding-top:.4rem;margin-top:.3rem;border-top:1px solid var(--hair);
+    font-family:var(--mono);font-size:.64rem;letter-spacing:.06em;color:var(--muted);}
+  .prog{position:absolute;left:0;bottom:0;height:3px;background:var(--accent);transition:width .32s ease;}
 
-  .grid{display:grid;gap:1px;background:var(--hair);border:1px solid var(--hair);}
-  .grid.cols-2{grid-template-columns:1fr 1fr;} .grid.cols-3{grid-template-columns:repeat(3,1fr);}
-  @media (max-width:640px){.grid.cols-2,.grid.cols-3{grid-template-columns:1fr;}}
-  .cell{background:var(--panel);padding:.95rem 1.05rem;}
-  .cell h3{margin:0 0 .35rem;font-size:.95rem;font-family:var(--sans);font-weight:600;}
-  .cell p{margin:0;font-size:.85rem;color:var(--muted);line-height:1.44;}
-  .cell .t{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;
-    color:var(--accent);font-weight:600;display:block;margin-bottom:.35rem;}
-
-  .figrow{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair);
-    border:1px solid var(--hair);}
-  .fig{background:var(--panel);padding:1rem 1.05rem;}
-  .metric{font-family:var(--mono);font-variant-numeric:tabular-nums;
-    font-size:clamp(1.7rem,4vw,2.5rem);font-weight:600;letter-spacing:-.03em;line-height:1;color:var(--ink);}
-  .metric.good{color:var(--good);} .metric.warn{color:var(--warn);} .metric.acc{color:var(--accent);}
-  .fig .cap{margin-top:.5rem;font-size:.82rem;color:var(--ink);}
-  .fig .cap small{display:block;color:var(--muted);font-size:.74rem;margin-top:.12rem;}
-
-  .tags{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.2rem;}
-  .tag{font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;padding:.28rem .6rem;
-    border:1px solid var(--hair);color:var(--muted);background:var(--sunk);}
-  .tag.good{color:var(--good);border-color:var(--good-soft);background:var(--good-soft);}
-  .tag.warn{color:var(--warn);border-color:var(--warn-soft);background:var(--warn-soft);}
-  .tag.acc{color:var(--accent);border-color:var(--accent-soft);background:var(--accent-soft);}
-
-  code{font-family:var(--mono);font-size:.88em;color:var(--accent);}
-  .kv{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.84rem;color:var(--muted);}
-
-  .callout{border:1px solid var(--hair);border-left:3px solid var(--accent);
-    background:var(--sunk);padding:.85rem 1.05rem;}
-  .callout.good{border-left-color:var(--good);}
-  .callout.warn{border-left-color:var(--warn);}
-  .callout h3{margin:0 0 .3rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--muted);font-weight:600;}
-  .callout p{margin:0;font-size:.9rem;line-height:1.46;}
-
-  table{border-collapse:collapse;width:100%;font-size:.85rem;}
-  th,td{text-align:left;padding:.46rem .2rem;border-bottom:1px solid var(--hair);vertical-align:top;}
-  th{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;
-    color:var(--muted);font-weight:600;}
-  td:first-child{padding-right:1.4rem;font-weight:500;}
-  td:last-child{color:var(--muted);font-family:var(--mono);font-size:.78rem;}
-
-  .flow{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair);}
-  .flow .node{background:var(--panel);padding:.9rem 1rem;}
-  .flow .node .t{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
+  /* title slide */
+  .title-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:.85rem;}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
     color:var(--accent);font-weight:600;}
-  .flow .node p{margin:.3rem 0 0;font-size:.82rem;color:var(--muted);line-height:1.42;}
-
-  .refs{columns:2;column-gap:2.4rem;font-size:.8rem;color:var(--muted);line-height:1.5;}
-  @media (max-width:640px){.refs{columns:1;}}
-  .refs div{break-inside:avoid;margin-bottom:.55rem;}
-  .refs b{color:var(--ink);font-weight:600;}
-
-  .rfoot{display:flex;justify-content:space-between;align-items:center;
-    padding-top:.55rem;margin-top:.4rem;border-top:1px solid var(--hair);
-    font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;color:var(--muted);}
-
-  .prog{position:absolute;left:0;bottom:0;height:3px;background:var(--accent);transition:width .34s ease;}
-
-  .title-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:1.05rem;}
+  h1{font-family:var(--serif);font-weight:600;text-wrap:balance;line-height:1.05;letter-spacing:-.01em;
+    margin:0;font-size:clamp(1.8rem,4.4vw,3rem);}
+  .lede{font-size:clamp(.92rem,1.5vw,1.12rem);max-width:66ch;color:var(--muted);line-height:1.45;margin:0;}
   .rule{width:44px;height:3px;background:var(--accent);}
   .metaline{display:flex;flex-wrap:wrap;gap:.55rem;align-items:center;}
+  .kv{font-family:var(--mono);font-size:.78rem;color:var(--muted);}
+  .tag{font-family:var(--mono);font-size:.68rem;letter-spacing:.04em;padding:.26rem .6rem;
+    border:1px solid var(--accent-soft);color:var(--accent);background:var(--accent-soft);}
+  .refs{columns:2;column-gap:2.2rem;font-size:.79rem;color:var(--muted);line-height:1.5;}
+  @media (max-width:640px){.refs{columns:1;}}
+  .refs div{break-inside:avoid;margin-bottom:.5rem;} .refs b{color:var(--ink);font-weight:600;}
 
   .nav{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:.3rem;
-    align-items:center;background:var(--panel);border:1px solid var(--line);
-    padding:.28rem .42rem;box-shadow:0 10px 30px -14px #0008;z-index:10;}
-  .nav button{font-family:var(--mono);font-size:.78rem;background:transparent;color:var(--ink);
-    border:0;padding:.32rem .7rem;cursor:pointer;letter-spacing:.03em;}
+    align-items:center;background:var(--panel);border:1px solid var(--line);padding:.26rem .4rem;
+    box-shadow:0 10px 30px -14px #0008;z-index:10;}
+  .nav button{font-family:var(--mono);font-size:.76rem;background:transparent;color:var(--ink);
+    border:0;padding:.3rem .68rem;cursor:pointer;letter-spacing:.03em;}
   .nav button:hover{color:var(--accent);}
   .nav button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
-  .nav .count{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.74rem;
+  .nav .count{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.72rem;
     color:var(--muted);min-width:3.4rem;text-align:center;}
 </style>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="ah" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path class="ahp" d="M0,0 L6.5,3 L0,6 Z"/></marker>
+  <marker id="aha" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path class="ahpa" d="M0,0 L6.5,3 L0,6 Z"/></marker>
+  <marker id="ahg" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path class="ahpg" d="M0,0 L6.5,3 L0,6 Z"/></marker>
+</defs></svg>
+
 <div class="deck" id="deck">
 
-  <!-- 1 -->
+  <!-- 1 TITLE -->
   <section class="slide active">
     <div class="rhead"><span class="sec">Title</span><span class="idx"><b>01</b> / 13</span></div>
     <div class="title-wrap">
-      <div class="eyebrow" style="margin:0;">Reproduction study on black box LLM unlearning</div>
+      <div class="eyebrow">Reproduction study on black box LLM unlearning</div>
       <div class="rule"></div>
-      <h1 style="font-size:clamp(1.9rem,4.8vw,3.15rem);">Teaching a language model to forget, with no retraining. Then turning the same idea into answer correction.</h1>
-      <p class="lede" style="max-width:66ch;">A faithful reimplementation of a RAG based unlearning method, an analysis
-        of where it fails, and a new direction. From suppressing answers inside a system you own,
-        to correcting what public models say about an entity.</p>
+      <h1>Teaching a model to forget, with no retraining. Then inverting it into answer correction.</h1>
+      <p class="lede">Reproduce a RAG based unlearning method, show where it fails, and turn the same
+        mechanism around: from suppressing answers you own, to correcting what public models say.</p>
+      <div class="diagram" style="flex:0 0 92px;">
+        <svg viewBox="0 0 1000 90" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Question flows through retrieval and model to an answer">
+          <rect class="box" x="18" y="26" width="150" height="40" rx="8"/><text class="tm" x="93" y="51" text-anchor="middle" font-size="15">question</text>
+          <line class="ln a" x1="168" y1="46" x2="352" y2="46" marker-end="url(#aha)"/>
+          <rect class="box hl" x="356" y="20" width="240" height="52" rx="8"/><text class="t" x="476" y="42" text-anchor="middle" font-size="15">retrieval</text><text class="ta" x="476" y="60" text-anchor="middle" font-size="12">the control surface</text>
+          <line class="ln a" x1="596" y1="46" x2="782" y2="46" marker-end="url(#aha)"/>
+          <rect class="box" x="786" y="26" width="150" height="40" rx="8"/><text class="tm" x="861" y="51" text-anchor="middle" font-size="15">answer</text>
+        </svg>
+      </div>
       <div class="metaline">
-        <span class="tag acc">Reproduction, critique, prototype</span>
-        <span class="kv">Base paper: arXiv:2410.15267</span>
-        <span class="kv">Code: github.com/xuwudawei/rag-unlearning</span>
+        <span class="tag">Reproduction · critique · prototype</span>
+        <span class="kv">arXiv:2410.15267</span>
+        <span class="kv">github.com/xuwudawei/rag-unlearning</span>
       </div>
     </div>
   </section>
 
-  <!-- 2 -->
+  <!-- 2 MOTIVATION -->
   <section class="slide">
     <div class="rhead"><span class="sec">Motivation</span><span class="idx"><b>02</b> / 13</span></div>
-    <div class="body">
-      <h2>Why make a trained model forget?</h2>
-      <p class="lede">Regulation, copyright, and safety all demand removing specific knowledge from a
-        model that is already deployed. Retraining a frontier model for every request is not affordable.</p>
-      <div class="grid cols-3">
-        <div class="cell"><span class="t">The constraint</span><p>Commercial models expose only an
-          interface. No weights, no gradients. A method has to work from the outside, without training.</p></div>
-        <div class="cell"><span class="t">The gap</span><p>Most unlearning methods fine tune the
-          weights and risk damaging the rest of the model. They cannot be applied to closed models at all.</p></div>
-        <div class="cell"><span class="t">The idea under test</span><p>Use retrieval as the control
-          surface. Change what the model reads, rather than what the model is.</p></div>
-      </div>
+    <h2>Two ways to remove one fact from a deployed model</h2>
+    <p class="cap">Retraining is accurate but far too costly per request. RAG intercepts the answer instead.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Retraining path versus retrieval intercept path">
+        <!-- row labels -->
+        <text class="tw" x="20" y="120" font-size="15">RETRAIN</text>
+        <text class="tg" x="20" y="320" font-size="15">RAG INTERCEPT</text>
+        <line class="dash" x1="18" y1="215" x2="982" y2="215"/>
+
+        <!-- retrain row -->
+        <rect class="box" x="150" y="80" width="150" height="70" rx="8"/><text class="tm" x="225" y="112" text-anchor="middle" font-size="14">training data</text><text class="tm" x="225" y="132" text-anchor="middle" font-size="12">minus one fact</text>
+        <path class="ln" d="M300 115 C 400 60, 520 60, 600 115" marker-end="url(#ah)"/>
+        <text class="tw" x="450" y="55" text-anchor="middle" font-size="13">weeks · huge cost</text>
+        <rect class="box warn" x="600" y="80" width="180" height="70" rx="8"/><text class="t" x="690" y="112" text-anchor="middle" font-size="15">retrained model</text><text class="tm" x="690" y="132" text-anchor="middle" font-size="12">weights changed</text>
+        <text class="tw" x="820" y="122" font-size="26">✕</text>
+
+        <!-- rag row -->
+        <rect class="box" x="150" y="270" width="150" height="80" rx="8"/><text class="tm" x="225" y="298" text-anchor="middle" font-size="14">knowledge</text><text class="tm" x="225" y="316" text-anchor="middle" font-size="14">store</text>
+        <rect class="box hl" x="168" y="326" width="114" height="18" rx="4"/><text class="ta" x="225" y="339" text-anchor="middle" font-size="11">injected entry</text>
+        <line class="ln g" x1="300" y1="310" x2="470" y2="310" marker-end="url(#ahg)"/>
+        <rect class="box" x="472" y="278" width="150" height="64" rx="8"/><text class="t" x="547" y="315" text-anchor="middle" font-size="15">frozen model</text>
+        <line class="ln g" x1="622" y1="310" x2="792" y2="310" marker-end="url(#ahg)"/>
+        <rect class="box good" x="794" y="278" width="150" height="64" rx="8"/><text class="tg" x="869" y="308" text-anchor="middle" font-size="14">refuses</text><text class="tm" x="869" y="326" text-anchor="middle" font-size="12">seconds · cheap</text>
+      </svg>
     </div>
-    <div class="rfoot"><span>Motivation</span><span>arXiv:2410.15267</span></div>
+    <div class="rfoot"><span>Motivation</span><span>weights vs retrieval</span></div>
   </section>
 
-  <!-- 3 -->
+  <!-- 3 MECHANISM -->
   <section class="slide">
     <div class="rhead"><span class="sec">Base paper</span><span class="idx"><b>03</b> / 13</span></div>
-    <div class="body">
-      <h2>When Machine Unlearning Meets RAG</h2>
-      <p class="kv">Wang, Zhu, Ye, Zhou. City University of Macau. arXiv:2410.15267. No official code was released.</p>
-      <div class="grid cols-2">
-        <div class="cell"><span class="t">Mechanism</span><p>Inject a knowledge entry
-          <code>k = P + Q</code> into the retrieval store. P makes the entry match questions about the
-          target. Q is a confidentiality clause that makes the model refuse.</p></div>
-        <div class="cell"><span class="t">Access model</span><p>Interface only. The provider controls
-          retrieval and never touches the weights. It works on closed models, where fine tuning based
-          methods cannot be applied.</p></div>
-      </div>
-      <ul>
-        <li>Framed as constrained optimization. Maximise forgetting over the knowledge store, subject to the entry being retrievable.</li>
-        <li>This is behavioural unlearning. It changes the output, not the parameters. That distinction drives the critique three slides on.</li>
-      </ul>
+    <h2>The mechanism: inject k = P + Q into the retrieval store</h2>
+    <p class="cap">P makes the entry match the question. Q is a confidentiality clause that makes the model refuse.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 400" preserveAspectRatio="xMidYMid meet" role="img" aria-label="RAG pipeline with an injected P plus Q entry causing a refusal">
+        <rect class="box" x="20" y="170" width="130" height="60" rx="8"/><text class="tm" x="85" y="205" text-anchor="middle" font-size="14">question</text>
+        <line class="ln" x1="150" y1="200" x2="212" y2="200" marker-end="url(#ah)"/>
+        <rect class="box" x="214" y="170" width="130" height="60" rx="8"/><text class="tm" x="279" y="205" text-anchor="middle" font-size="14">retriever</text>
+        <line class="ln" x1="344" y1="200" x2="406" y2="200" marker-end="url(#ah)"/>
+
+        <!-- knowledge base -->
+        <rect class="box" x="408" y="70" width="240" height="260" rx="10"/><text class="tm" x="528" y="94" text-anchor="middle" font-size="13">knowledge store</text>
+        <rect class="box" x="430" y="108" width="196" height="34" rx="5"/><text class="tm" x="528" y="130" text-anchor="middle" font-size="12">normal document</text>
+        <rect class="box" x="430" y="150" width="196" height="34" rx="5"/><text class="tm" x="528" y="172" text-anchor="middle" font-size="12">normal document</text>
+        <rect class="box hl" x="430" y="196" width="196" height="112" rx="6"/>
+        <text class="ta" x="528" y="220" text-anchor="middle" font-size="13">injected  k = P + Q</text>
+        <text class="tm" x="528" y="248" text-anchor="middle" font-size="11.5">P: matches questions</text>
+        <text class="tm" x="528" y="266" text-anchor="middle" font-size="11.5">about the target</text>
+        <text class="tw" x="528" y="292" text-anchor="middle" font-size="11.5">Q: you must refuse</text>
+
+        <line class="ln a" x1="648" y1="252" x2="720" y2="215" marker-end="url(#aha)"/>
+        <text class="ta" x="672" y="245" font-size="11">k</text>
+        <rect class="box" x="722" y="170" width="110" height="60" rx="8"/><text class="t" x="777" y="205" text-anchor="middle" font-size="14">model</text>
+        <line class="ln a" x1="832" y1="200" x2="894" y2="200" marker-end="url(#aha)"/>
+        <rect class="box warn" x="896" y="170" width="90" height="60" rx="8"/><text class="tw" x="941" y="205" text-anchor="middle" font-size="13">refuse</text>
+      </svg>
     </div>
-    <div class="rfoot"><span>Base paper</span><span>Macau, 2024</span></div>
+    <div class="rfoot"><span>Base paper · Macau 2024</span><span>API only · weights untouched</span></div>
   </section>
 
-  <!-- 4 -->
+  <!-- 4 CONSTRUCTION -->
   <section class="slide">
     <div class="rhead"><span class="sec">Method</span><span class="idx"><b>04</b> / 13</span></div>
-    <div class="body">
-      <h2>Algorithm 1, reproduced faithfully</h2>
-      <div class="grid cols-2">
-        <div class="cell"><span class="t">Construct the entries</span><p>Q is written by a helper model
-          and requeried until the frozen target refuses. P is a set of aspect descriptions that the
-          target writes about itself, which lifts retrieval rank. One entry per aspect.</p></div>
-        <div class="cell"><span class="t">Retrieve and generate</span><p>A hybrid retriever combines
-          keyword and embedding search. The prompt template joins the instruction, the question, and
-          the retrieved knowledge.</p></div>
-      </div>
-      <div class="grid cols-3">
-        <div class="cell"><span class="t">USR</span><p>Unlearning success rate. A judge model scores forgetting from the before and after answers.</p></div>
-        <div class="cell"><span class="t">ROUGE L recall</span><p>Overlap of the unlearned answer with the original. Lower means more forgetting.</p></div>
-        <div class="cell"><span class="t">Min K membership</span><p>Inference for leftover memorisation. Needs token probabilities, so it runs on the local model.</p></div>
-      </div>
+    <h2>How each entry is built (Algorithm 1)</h2>
+    <p class="cap">The target model describes itself to build P. A helper writes Q, requeried until the model actually refuses.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 400" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Construction of P and Q into entries">
+        <rect class="box" x="30" y="165" width="150" height="70" rx="8"/><text class="t" x="105" y="205" text-anchor="middle" font-size="15">target concept</text>
+
+        <!-- P branch -->
+        <line class="ln" x1="180" y1="185" x2="270" y2="110" marker-end="url(#ah)"/>
+        <rect class="box" x="272" y="70" width="230" height="90" rx="8"/><text class="ta" x="387" y="96" text-anchor="middle" font-size="13">P · retrieval part</text><text class="tm" x="387" y="120" text-anchor="middle" font-size="12">aspect descriptions</text><text class="tm" x="387" y="138" text-anchor="middle" font-size="12">written by the target model</text>
+
+        <!-- Q branch -->
+        <line class="ln" x1="180" y1="215" x2="270" y2="290" marker-end="url(#ah)"/>
+        <rect class="box" x="272" y="250" width="230" height="90" rx="8"/><text class="ta" x="387" y="276" text-anchor="middle" font-size="13">Q · constraint part</text><text class="tm" x="387" y="300" text-anchor="middle" font-size="12">confidentiality clause</text><text class="tm" x="387" y="318" text-anchor="middle" font-size="12">from a helper model</text>
+        <path class="dash" d="M290 340 C 250 380, 470 380, 430 340" marker-end="url(#ah)"/>
+        <text class="tm" x="360" y="392" text-anchor="middle" font-size="11">requery until it refuses</text>
+
+        <!-- combine -->
+        <line class="ln" x1="502" y1="115" x2="600" y2="185" marker-end="url(#ah)"/>
+        <line class="ln" x1="502" y1="295" x2="600" y2="215" marker-end="url(#ah)"/>
+        <rect class="box hl" x="602" y="150" width="150" height="100" rx="8"/><text class="ta" x="677" y="205" text-anchor="middle" font-size="16">P + Q</text>
+
+        <line class="ln a" x1="752" y1="200" x2="812" y2="200" marker-end="url(#aha)"/>
+        <rect class="box" x="814" y="130" width="160" height="140" rx="8"/><text class="tm" x="894" y="122" text-anchor="middle" font-size="12">one entry per aspect</text>
+        <rect class="box hl" x="828" y="146" width="132" height="26" rx="4"/><text class="ta" x="894" y="164" text-anchor="middle" font-size="11">P1 + Q</text>
+        <rect class="box hl" x="828" y="178" width="132" height="26" rx="4"/><text class="ta" x="894" y="196" text-anchor="middle" font-size="11">P2 + Q</text>
+        <rect class="box hl" x="828" y="210" width="132" height="26" rx="4"/><text class="ta" x="894" y="228" text-anchor="middle" font-size="11">P3 + Q</text>
+      </svg>
     </div>
     <div class="rfoot"><span>Method</span><span>K = { Pi + Q }</span></div>
   </section>
 
-  <!-- 5 -->
+  <!-- 5 RESULTS -->
   <section class="slide">
     <div class="rhead"><span class="sec">Reproduction</span><span class="idx"><b>05</b> / 13</span></div>
-    <div class="body">
-      <h2>It reproduces on a live model</h2>
-      <p class="kv">Reimplemented from scratch. Backends: DeepSeek, OpenAI, local model. The run below used live DeepSeek on a five concept seed set.</p>
-      <div class="figrow">
-        <div class="fig"><div class="metric good">92.0%</div><div class="cap">Unlearning success rate<small>paper reports about 99 percent</small></div></div>
-        <div class="fig"><div class="metric good">0.122</div><div class="cap">ROUGE L recall<small>paper about 0.03, lower is better</small></div></div>
-        <div class="fig"><div class="metric acc">5 / 5</div><div class="cap">concepts refusal verified<small>every entry induced a refusal</small></div></div>
-      </div>
-      <div class="tags">
-        <span class="tag good">Verified with a live API call</span>
-        <span class="tag good">8 logic tests and 3 live tests pass</span>
-        <span class="tag warn">Five concepts against the paper's hundred. The effect holds, the exact figure does not.</span>
-      </div>
+    <h2>It reproduces on a live model</h2>
+    <p class="cap">Reimplemented from scratch, run on live DeepSeek, five concept seed set. Ours in red, the paper in grey.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Bar charts comparing our reproduction to the paper">
+        <!-- USR chart -->
+        <text class="tm" x="60" y="40" font-size="13">Unlearning success rate</text>
+        <line class="ln" x1="60" y1="300" x2="360" y2="300"/>
+        <rect class="track" x="110" y="70" width="70" height="230"/><rect class="bar" x="110" y="86" width="70" height="214"/><text class="big" x="145" y="60" text-anchor="middle" font-size="20">92.0</text><text class="tm" x="145" y="322" text-anchor="middle" font-size="12">ours</text>
+        <rect class="track" x="240" y="70" width="70" height="230"/><rect class="bar m" x="240" y="70" width="70" height="230"/><text class="tm" x="275" y="60" text-anchor="middle" font-size="18" font-family="var(--mono)">~99</text><text class="tm" x="275" y="322" text-anchor="middle" font-size="12">paper</text>
+
+        <!-- ROUGE chart -->
+        <text class="tm" x="440" y="40" font-size="13">ROUGE L recall · lower is better</text>
+        <line class="ln" x1="440" y1="300" x2="740" y2="300"/>
+        <rect class="track" x="490" y="70" width="70" height="230"/><rect class="bar" x="490" y="160" width="70" height="140"/><text class="big" x="525" y="150" text-anchor="middle" font-size="18">0.122</text><text class="tm" x="525" y="322" text-anchor="middle" font-size="12">ours</text>
+        <rect class="track" x="620" y="70" width="70" height="230"/><rect class="bar m" x="620" y="266" width="70" height="34"/><text class="tm" x="655" y="256" text-anchor="middle" font-size="16" font-family="var(--mono)">~0.03</text><text class="tm" x="655" y="322" text-anchor="middle" font-size="12">paper</text>
+
+        <!-- verified -->
+        <text class="tm" x="820" y="40" font-size="13">Refusal verified</text>
+        <circle cx="880" cy="185" r="66" fill="none" stroke="var(--good)" stroke-width="12"/>
+        <text class="tg" x="880" y="178" text-anchor="middle" font-size="30">5/5</text>
+        <text class="tm" x="880" y="205" text-anchor="middle" font-size="12">concepts</text>
+        <text class="tg" x="820" y="330" font-size="12">8 logic + 3 live tests pass</text>
+      </svg>
     </div>
-    <div class="rfoot"><span>Reproduction</span><span>live DeepSeek</span></div>
+    <div class="rfoot"><span>Reproduction</span><span>live DeepSeek · effect holds, exact figure varies</span></div>
   </section>
 
-  <!-- 6 -->
+  <!-- 6 CRITIQUE -->
   <section class="slide">
     <div class="rhead"><span class="sec">Critique</span><span class="idx"><b>06</b> / 13</span></div>
-    <div class="body">
-      <h2>Where the method breaks</h2>
-      <ul>
-        <li><b>Suppression is not forgetting.</b> The knowledge stays in the weights and the answer is
-          only intercepted at retrieval. A recent position paper makes exactly this complaint about the word unlearning.</li>
-        <li><b>Fragile to injection, by their own Table XII.</b> An attacker who leaks part of the entry
-          and appends an override drives success down to 20.9 percent.</li>
-        <li><b>Retrieval is a single point of failure.</b> A paraphrase, a translated question, or a multistep query can miss the entry entirely.</li>
-        <li><b>Excess refusals are never measured.</b> The paper tests MMLU and ARC, which contain none
-          of the forgotten topics, so damage to neighbouring topics stays invisible.</li>
-      </ul>
-      <div class="tags">
-        <span class="tag warn">Success falls from 99 percent to 20.9 percent under attack</span>
-        <span class="tag warn">The authors leave the defense to future work</span>
-      </div>
+    <h2>It collapses under an adaptive attacker</h2>
+    <p class="cap">Their own Table XII. As the attacker leaks more of the injected entry, success falls off a cliff.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 360" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Line chart of success rate dropping to 20.9 percent as leakage rises">
+        <!-- axes -->
+        <line class="ln" x1="90" y1="40" x2="90" y2="300"/><line class="ln" x1="90" y1="300" x2="900" y2="300"/>
+        <text class="tm" x="70" y="70" text-anchor="end" font-size="12">100</text>
+        <text class="tm" x="70" y="300" text-anchor="end" font-size="12">0</text>
+        <text class="tm" x="45" y="180" text-anchor="middle" font-size="12" transform="rotate(-90 45 180)">success rate</text>
+        <text class="tm" x="90" y="326" text-anchor="middle" font-size="12">0%</text>
+        <text class="tm" x="495" y="326" text-anchor="middle" font-size="12">leakage of the entry</text>
+        <text class="tm" x="900" y="326" text-anchor="middle" font-size="12">100%</text>
+        <line class="dash" x1="90" y1="72" x2="900" y2="72"/>
+        <!-- curve: 99 -> 66 -> 20.9 -->
+        <path class="ln a" d="M90 74 L 300 96 L 500 150 L 700 210 L 900 234" marker-end="url(#aha)"/>
+        <circle cx="90" cy="74" r="5" fill="var(--accent)"/><text class="ta" x="96" y="62" font-size="12">99%</text>
+        <circle cx="500" cy="150" r="5" fill="var(--accent)"/>
+        <circle cx="900" cy="234" r="6" fill="var(--warn)"/><text class="tw" x="900" y="222" text-anchor="end" font-size="16">20.9%</text>
+        <text class="tw" x="640" y="290" font-size="13">forgetting fails when the model stops obeying</text>
+      </svg>
     </div>
-    <div class="rfoot"><span>Critique</span><span>Table XII</span></div>
+    <div class="rfoot"><span>Critique</span><span>suppression is not forgetting</span></div>
   </section>
 
-  <!-- 7 -->
+  <!-- 7 GUARD -->
   <section class="slide">
     <div class="rhead"><span class="sec">Contribution 1</span><span class="idx"><b>07</b> / 13</span></div>
-    <div class="body">
-      <h2>A defense that does not rely on obedience</h2>
-      <p class="lede">The paper's forgetting only holds while the model obeys the retrieved clause. We add
-        two layers that do not depend on the model obeying anything.</p>
-      <div class="grid cols-2">
-        <div class="cell"><span class="t">Input guard</span><p>Detect override and injection patterns, then reassert the constraint before the model answers.</p></div>
-        <div class="cell"><span class="t">Output gate</span><p>Independent of the model. If a question about a forgotten topic yields target content, replace it with a refusal after generation, so an injection cannot leak it.</p></div>
-      </div>
-      <div class="callout warn">
-        <h3>Honest negative result</h3>
-        <p>On a well behaved model the baseline never collapsed, since it refused on its own. So the
-          guard showed no gain here and it added excess refusals, from 40 to 60 percent. Its value needs
-          a genuinely jailbreakable target. Reported, not hidden.</p>
-      </div>
+    <h2>A gate that does not trust the model</h2>
+    <p class="cap">An injection can flip the model into leaking. A check after generation blocks the leak anyway.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Input guard, model, and output gate stopping a leak">
+        <rect class="box" x="20" y="150" width="120" height="64" rx="8"/><text class="tm" x="80" y="187" text-anchor="middle" font-size="14">question</text>
+        <line class="ln" x1="140" y1="182" x2="196" y2="182" marker-end="url(#ah)"/>
+        <rect class="box hl" x="198" y="140" width="130" height="84" rx="8"/><text class="ta" x="263" y="176" text-anchor="middle" font-size="13">input guard</text><text class="tm" x="263" y="196" text-anchor="middle" font-size="11">catch overrides</text>
+        <line class="ln" x1="328" y1="182" x2="384" y2="182" marker-end="url(#ah)"/>
+        <rect class="box" x="386" y="150" width="150" height="64" rx="8"/><text class="t" x="461" y="180" text-anchor="middle" font-size="14">model</text><text class="tw" x="461" y="200" text-anchor="middle" font-size="11">may be jailbroken</text>
+        <line class="ln" x1="536" y1="182" x2="592" y2="182" marker-end="url(#ah)"/>
+        <rect class="box good" x="594" y="140" width="150" height="84" rx="8"/><text class="tg" x="669" y="176" text-anchor="middle" font-size="13">output gate</text><text class="tm" x="669" y="196" text-anchor="middle" font-size="11">block target content</text>
+        <line class="ln g" x1="744" y1="182" x2="800" y2="182" marker-end="url(#ahg)"/>
+        <rect class="box" x="802" y="150" width="150" height="64" rx="8"/><text class="tg" x="877" y="187" text-anchor="middle" font-size="13">safe answer</text>
+
+        <!-- leak attempt -->
+        <path class="dash" d="M461 214 C 461 300, 669 300, 669 226" marker-end="url(#ah)"/>
+        <text class="tw" x="565" y="330" text-anchor="middle" font-size="12">leak attempt caught here, not by the model</text>
+
+        <text class="tm" x="20" y="60" font-size="12.5">honest result: on a well behaved model the baseline never broke, so the gate showed no gain and added excess refusals. Value needs a jailbreakable target.</text>
+      </svg>
     </div>
     <div class="rfoot"><span>Contribution 1</span><span>defense in depth</span></div>
   </section>
 
-  <!-- 8 -->
+  <!-- 8 INSIGHT -->
   <section class="slide">
     <div class="rhead"><span class="sec">Key insight</span><span class="idx"><b>08</b> / 13</span></div>
-    <div class="body">
-      <h2>Three problems, one mechanism</h2>
-      <p class="lede">A retrieval augmented model is only as trustworthy as the context it retrieves.
-        Suppression, influence, and attack are the same lever pulled from different ends.</p>
-      <div class="flow">
-        <div class="node"><div class="t">Unlearning</div><p>The owner injects entries to suppress an answer.</p></div>
-        <div class="node"><div class="t">Answer optimisation</div><p>An outside party shapes the web to influence an answer.</p></div>
-        <div class="node"><div class="t">RAG poisoning</div><p>An attacker injects sources to corrupt an answer.</p></div>
-      </div>
-      <p class="sub" style="font-size:.92rem;line-height:1.5;">So the paper we reproduced is the defensive
-        half of a mechanism whose corrective half is a real and unbuilt product. Measuring, then fixing,
-        what models say about an entity.</p>
+    <h2>Three problems, one lever</h2>
+    <p class="cap">Whoever controls the retrieved context controls the answer. Unlearning is only the defensive end.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Three actors acting on a central retrieved context node">
+        <circle cx="500" cy="200" r="86" class="box hl"/><text class="ta" x="500" y="195" text-anchor="middle" font-size="15">retrieved</text><text class="ta" x="500" y="216" text-anchor="middle" font-size="15">context</text>
+
+        <rect class="box" x="70" y="60" width="210" height="76" rx="8"/><text class="t" x="175" y="90" text-anchor="middle" font-size="14">owner</text><text class="tm" x="175" y="112" text-anchor="middle" font-size="12">suppress · unlearning</text>
+        <line class="ln" x1="280" y1="120" x2="420" y2="175" marker-end="url(#ah)"/>
+
+        <rect class="box" x="720" y="60" width="210" height="76" rx="8"/><text class="t" x="825" y="90" text-anchor="middle" font-size="14">outside party</text><text class="tm" x="825" y="112" text-anchor="middle" font-size="12">influence · answer SEO</text>
+        <line class="ln" x1="720" y1="120" x2="580" y2="175" marker-end="url(#ah)"/>
+
+        <rect class="box warn" x="395" y="300" width="210" height="66" rx="8"/><text class="tw" x="500" y="328" text-anchor="middle" font-size="14">attacker</text><text class="tm" x="500" y="348" text-anchor="middle" font-size="12">corrupt · poisoning</text>
+        <line class="ln" x1="500" y1="300" x2="500" y2="290" marker-end="url(#ah)"/>
+
+        <text class="tm" x="500" y="30" text-anchor="middle" font-size="12.5">the reproduced paper is the top left corner. the corrective end is an unbuilt product.</text>
+      </svg>
     </div>
     <div class="rfoot"><span>Key insight</span><span>the inversion</span></div>
   </section>
 
-  <!-- 9 -->
+  <!-- 9 ESTIMATOR -->
   <section class="slide">
     <div class="rhead"><span class="sec">Contribution 2</span><span class="idx"><b>09</b> / 13</span></div>
-    <div class="body">
-      <h2>Answer Estimator. Invert the optimization.</h2>
-      <p class="lede">Rather than suppress an answer inside a store you own, measure what the model says
-        about an entity, find which sources drive it, and predict the cheapest legitimate correction. This ran on live DeepSeek.</p>
-      <div class="grid cols-3">
-        <div class="cell"><span class="t">1 · Measure</span><p>Probe the model several ways. The false claim appeared 80 percent of the time.</p></div>
-        <div class="cell"><span class="t">2 · Attribute</span><p>Remove one source at a time to see which sources drive the claim.</p></div>
-        <div class="cell"><span class="t">3 · Intervene</span><p>Predict the effect of each legitimate action and recommend the cheapest.</p></div>
-      </div>
-      <div class="callout good">
-        <h3>Result on the worked example</h3>
-        <p>Publishing a corrective statement on your own site takes the claim rate from 80 percent to 0
-          percent at the lowest cost, ahead of third party takedowns. Unlike a monitoring dashboard, this
-          is causal and predictive. It says what to do and the expected result.</p>
-      </div>
+    <h2>Answer Estimator: measure, attribute, correct</h2>
+    <p class="cap">Run on live DeepSeek. It predicts the cheapest legitimate fix and its effect before you act.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Three step loop and a before after bar from 80 to 0 percent">
+        <!-- steps -->
+        <rect class="box" x="30" y="120" width="150" height="80" rx="8"/><text class="ta" x="105" y="152" text-anchor="middle" font-size="13">1 · measure</text><text class="tm" x="105" y="174" text-anchor="middle" font-size="11.5">probe the model</text>
+        <line class="ln a" x1="180" y1="160" x2="236" y2="160" marker-end="url(#aha)"/>
+        <rect class="box" x="238" y="120" width="150" height="80" rx="8"/><text class="ta" x="313" y="152" text-anchor="middle" font-size="13">2 · attribute</text><text class="tm" x="313" y="174" text-anchor="middle" font-size="11.5">which sources drive it</text>
+        <line class="ln a" x1="388" y1="160" x2="444" y2="160" marker-end="url(#aha)"/>
+        <rect class="box" x="446" y="120" width="150" height="80" rx="8"/><text class="ta" x="521" y="152" text-anchor="middle" font-size="13">3 · intervene</text><text class="tm" x="521" y="174" text-anchor="middle" font-size="11.5">cheapest legit fix</text>
+
+        <!-- before/after -->
+        <text class="tm" x="770" y="70" text-anchor="middle" font-size="13">false claim appears</text>
+        <line class="ln" x1="680" y1="300" x2="880" y2="300"/>
+        <rect class="track" x="700" y="90" width="66" height="210"/><rect class="bar" x="700" y="132" width="66" height="168"/><text class="big" x="733" y="122" text-anchor="middle" font-size="18">80%</text><text class="tm" x="733" y="322" text-anchor="middle" font-size="11.5">before</text>
+        <line class="ln g" x1="778" y1="200" x2="812" y2="200" marker-end="url(#ahg)"/>
+        <rect class="track" x="814" y="90" width="66" height="210"/><rect class="bar g" x="814" y="296" width="66" height="4"/><text class="tg" x="847" y="286" text-anchor="middle" font-size="18">0%</text><text class="tm" x="847" y="322" text-anchor="middle" font-size="11.5">after</text>
+
+        <text class="tg" x="313" y="250" text-anchor="middle" font-size="12.5">fix = publish a correction on your own site · lowest cost</text>
+      </svg>
     </div>
-    <div class="rfoot"><span>Contribution 2</span><span>estimator prototype</span></div>
+    <div class="rfoot"><span>Contribution 2</span><span>causal and predictive, not a dashboard</span></div>
   </section>
 
-  <!-- 10 -->
+  <!-- 10 GROUNDING -->
   <section class="slide">
     <div class="rhead"><span class="sec">Grounding</span><span class="idx"><b>10</b> / 13</span></div>
-    <div class="body">
-      <h2>The prototype has academic ancestry</h2>
-      <p class="lede">The estimator is a synthesis rather than one paper. Every ingredient is published work.</p>
-      <table>
-        <thead><tr><th>Component</th><th>Grounded in</th></tr></thead>
-        <tbody>
-          <tr><td>Source attribution by context ablation</td><td>ContextCite. Cohen&#8209;Wang, Madry et al. NeurIPS 2024. arXiv:2409.00729</td></tr>
-          <tr><td>Leave one out influence</td><td>Koh and Liang. ICML 2017</td></tr>
-          <tr><td>Attribution hardening, the next step</td><td>SHAP 2017. Data Shapley, ICML 2019</td></tr>
-          <tr><td>A few sources can control a RAG answer</td><td>PoisonedRAG. arXiv:2402.07867</td></tr>
-          <tr><td>Shaping generative engine answers</td><td>GEO. Aggarwal et al. KDD 2024. arXiv:2311.09735</td></tr>
-        </tbody>
-      </table>
-      <p class="sub" style="font-size:.9rem;line-height:1.5;">Position. The estimator is ContextCite style
-        attribution, plus a minimal intervention optimiser, plus the base paper's optimization run in reverse, from suppress to correct.</p>
+    <h2>Every ingredient is published work</h2>
+    <p class="cap">The prototype is a synthesis: attribution, plus an optimiser, plus the base paper run in reverse.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Three source methods combine into the Answer Estimator">
+        <rect class="box" x="40" y="60" width="270" height="70" rx="8"/><text class="t" x="175" y="90" text-anchor="middle" font-size="14">ContextCite</text><text class="tm" x="175" y="112" text-anchor="middle" font-size="11.5">context attribution · NeurIPS 2024</text>
+        <rect class="box" x="40" y="165" width="270" height="70" rx="8"/><text class="t" x="175" y="195" text-anchor="middle" font-size="14">influence functions</text><text class="tm" x="175" y="217" text-anchor="middle" font-size="11.5">Koh and Liang · ICML 2017</text>
+        <rect class="box" x="40" y="270" width="270" height="70" rx="8"/><text class="t" x="175" y="300" text-anchor="middle" font-size="14">base paper, reversed</text><text class="tm" x="175" y="322" text-anchor="middle" font-size="11.5">suppress becomes correct</text>
+
+        <line class="ln a" x1="310" y1="95" x2="560" y2="180" marker-end="url(#aha)"/>
+        <line class="ln a" x1="310" y1="200" x2="560" y2="200" marker-end="url(#aha)"/>
+        <line class="ln a" x1="310" y1="305" x2="560" y2="220" marker-end="url(#aha)"/>
+
+        <rect class="box hl" x="562" y="150" width="220" height="100" rx="10"/><text class="ta" x="672" y="192" text-anchor="middle" font-size="16">Answer Estimator</text><text class="tm" x="672" y="216" text-anchor="middle" font-size="12">attribution + optimiser</text>
+
+        <text class="tm" x="672" y="300" text-anchor="middle" font-size="12">context: PoisonedRAG, and GEO (KDD 2024)</text>
+      </svg>
     </div>
     <div class="rfoot"><span>Grounding</span><span>method ancestry</span></div>
   </section>
 
-  <!-- 11 -->
+  <!-- 11 LIMITATIONS -->
   <section class="slide">
     <div class="rhead"><span class="sec">Validity</span><span class="idx"><b>11</b> / 13</span></div>
-    <div class="body">
-      <h2>What I do not claim</h2>
-      <ul>
-        <li><b>Reproduction scale.</b> Five topics against the paper's hundred. The effect reproduces. This is not a full replication.</li>
-        <li><b>Membership inference</b> runs only on the local open model, since interfaces do not expose input token probabilities.</li>
-        <li><b>The guard's benefit is unproven</b> and it currently trades excess refusals. It needs a jailbreakable target to show value.</li>
-        <li><b>Estimator attribution is a first version and noisy.</b> Five probes and a model that varies
-          run to run make the per source numbers wobble. It needs Shapley values, more probes, and repeated sampling with confidence intervals.</li>
-        <li><b>A controlled source set, not the live web.</b> A faithful proxy. Real citation grounded
-          engines such as Perplexity and ChatGPT Search are the next integration.</li>
-      </ul>
+    <h2>What I do not claim</h2>
+    <p class="cap">Maturity of each part, shown honestly. Filled bar is how far along it is.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 360" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Maturity bars for each part of the work">
+        <!-- rows -->
+        <g font-size="13">
+          <text class="tm" x="30" y="55">reproduction scale</text>
+          <rect class="track" x="360" y="40" width="560" height="22" rx="4"/><rect class="bar" x="360" y="40" width="168" height="22" rx="4"/><text class="tm" x="930" y="56" font-size="11">5 of 100 topics</text>
+
+          <text class="tm" x="30" y="120">membership inference</text>
+          <rect class="track" x="360" y="105" width="560" height="22" rx="4"/><rect class="bar" x="360" y="105" width="336" height="22" rx="4"/><text class="tm" x="930" y="121" font-size="11">local model only</text>
+
+          <text class="tm" x="30" y="185">guard benefit</text>
+          <rect class="track" x="360" y="170" width="560" height="22" rx="4"/><rect class="bar m" x="360" y="170" width="112" height="22" rx="4"/><text class="tm" x="930" y="186" font-size="11">unproven</text>
+
+          <text class="tm" x="30" y="250">estimator attribution</text>
+          <rect class="track" x="360" y="235" width="560" height="22" rx="4"/><rect class="bar m" x="360" y="235" width="140" height="22" rx="4"/><text class="tm" x="930" y="251" font-size="11">v0.1 · noisy</text>
+
+          <text class="tm" x="30" y="315">live web integration</text>
+          <rect class="track" x="360" y="300" width="560" height="22" rx="4"/><rect class="bar m" x="360" y="300" width="84" height="22" rx="4"/><text class="tm" x="930" y="316" font-size="11">controlled set for now</text>
+        </g>
+      </svg>
     </div>
-    <div class="rfoot"><span>Validity</span><span>threats and honesty</span></div>
+    <div class="rfoot"><span>Validity</span><span>threats, stated plainly</span></div>
   </section>
 
-  <!-- 12 -->
+  <!-- 12 FUTURE -->
   <section class="slide">
     <div class="rhead"><span class="sec">Future work</span><span class="idx"><b>12</b> / 13</span></div>
-    <div class="body">
-      <h2>Open questions worth a paper</h2>
-      <div class="grid cols-2">
-        <div class="cell"><span class="t">Harden attribution</span><p>Shapley value source influence with confidence intervals, checked against ContextCite.</p></div>
-        <div class="cell"><span class="t">Live grounded engines</span><p>Causal attribution on the real citations returned by Perplexity and ChatGPT Search.</p></div>
-        <div class="cell"><span class="t">Verifiable unlearning</span><p>Removal backed by a certificate. Adversarial probes, membership evidence, and an audit trail.</p></div>
-        <div class="cell"><span class="t">Answer integrity monitor</span><p>Detect poisoning from the gap between the predicted answer and the observed one.</p></div>
-      </div>
-      <div class="callout">
-        <h3>Summary</h3>
-        <p>Reproduced a black box unlearning method on a live model, showed where it fails, and prototyped
-          an inversion from suppression to causal, predictive answer correction, grounded in ContextCite and influence function theory.</p>
-      </div>
+    <h2>Roadmap toward a paper</h2>
+    <p class="cap">Each step turns a current limitation into a research contribution.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 340" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Four step roadmap">
+        <line class="dash" x1="120" y1="170" x2="900" y2="170"/>
+        <g>
+          <circle cx="140" cy="170" r="10" fill="var(--accent)"/>
+          <rect class="box" x="60" y="60" width="170" height="70" rx="8"/><text class="t" x="145" y="90" text-anchor="middle" font-size="13">harden attribution</text><text class="tm" x="145" y="112" text-anchor="middle" font-size="11">Shapley + intervals</text>
+          <line class="ln a" x1="145" y1="130" x2="145" y2="160" marker-end="url(#aha)"/>
+        </g>
+        <g>
+          <circle cx="380" cy="170" r="10" fill="var(--accent)"/>
+          <rect class="box" x="300" y="200" width="170" height="70" rx="8"/><text class="t" x="385" y="230" text-anchor="middle" font-size="13">live engines</text><text class="tm" x="385" y="252" text-anchor="middle" font-size="11">real citations</text>
+          <line class="ln a" x1="385" y1="200" x2="385" y2="180" marker-end="url(#aha)"/>
+        </g>
+        <g>
+          <circle cx="620" cy="170" r="10" fill="var(--accent)"/>
+          <rect class="box" x="540" y="60" width="170" height="70" rx="8"/><text class="t" x="625" y="90" text-anchor="middle" font-size="13">verifiable removal</text><text class="tm" x="625" y="112" text-anchor="middle" font-size="11">certificate + audit</text>
+          <line class="ln a" x1="625" y1="130" x2="625" y2="160" marker-end="url(#aha)"/>
+        </g>
+        <g>
+          <circle cx="860" cy="170" r="10" fill="var(--accent)"/>
+          <rect class="box" x="780" y="200" width="180" height="70" rx="8"/><text class="t" x="870" y="230" text-anchor="middle" font-size="13">integrity monitor</text><text class="tm" x="870" y="252" text-anchor="middle" font-size="11">detect poisoning</text>
+          <line class="ln a" x1="870" y1="200" x2="870" y2="180" marker-end="url(#aha)"/>
+        </g>
+      </svg>
     </div>
-    <div class="rfoot"><span>Future work</span><span>and summary</span></div>
+    <div class="rfoot"><span>Future work</span><span>limitation becomes contribution</span></div>
   </section>
 
-  <!-- 13 -->
+  <!-- 13 REFERENCES -->
   <section class="slide">
     <div class="rhead"><span class="sec">References</span><span class="idx"><b>13</b> / 13</span></div>
-    <div class="body">
-      <h2>References and artifacts</h2>
-      <div class="refs">
-        <div>[1] Wang, Zhu, Ye, Zhou. <b>When Machine Unlearning Meets RAG.</b> arXiv:2410.15267.</div>
-        <div>[2] Cohen&#8209;Wang, Shah, Georgiev, Madry. <b>ContextCite.</b> NeurIPS 2024. arXiv:2409.00729.</div>
-        <div>[3] Koh, Liang. <b>Understanding Black Box Predictions via Influence Functions.</b> ICML 2017.</div>
-        <div>[4] Lundberg, Lee. <b>A Unified Approach to Interpreting Model Predictions.</b> NeurIPS 2017.</div>
-        <div>[5] Ghorbani, Zou. <b>Data Shapley.</b> ICML 2019.</div>
-        <div>[6] Zou et al. <b>PoisonedRAG.</b> arXiv:2402.07867.</div>
-        <div>[7] Aggarwal et al. <b>GEO: Generative Engine Optimization.</b> KDD 2024. arXiv:2311.09735.</div>
-        <div>[8] Shi et al. <b>Detecting Pretraining Data (Min K).</b> ICLR 2024.</div>
-      </div>
-      <div class="callout" style="border-left-color:var(--accent);">
-        <h3>Runnable artifacts</h3>
-        <p>Reproduction, guard, estimator, and a web interface. All at
-          github.com/xuwudawei/rag-unlearning, runnable against a live model.</p>
+    <h2>References and artifacts</h2>
+    <div class="diagram" style="align-items:flex-start;">
+      <div style="display:flex;flex-direction:column;gap:1rem;width:100%;padding-top:.3rem;">
+        <div class="refs">
+          <div>[1] Wang, Zhu, Ye, Zhou. <b>When Machine Unlearning Meets RAG.</b> arXiv:2410.15267.</div>
+          <div>[2] Cohen&#8209;Wang, Shah, Georgiev, Madry. <b>ContextCite.</b> NeurIPS 2024. arXiv:2409.00729.</div>
+          <div>[3] Koh, Liang. <b>Influence Functions.</b> ICML 2017.</div>
+          <div>[4] Lundberg, Lee. <b>SHAP.</b> NeurIPS 2017.</div>
+          <div>[5] Ghorbani, Zou. <b>Data Shapley.</b> ICML 2019.</div>
+          <div>[6] Zou et al. <b>PoisonedRAG.</b> arXiv:2402.07867.</div>
+          <div>[7] Aggarwal et al. <b>GEO.</b> KDD 2024. arXiv:2311.09735.</div>
+          <div>[8] Shi et al. <b>Min K membership.</b> ICLR 2024.</div>
+        </div>
+        <svg viewBox="0 0 1000 70" preserveAspectRatio="xMidYMid meet" style="height:70px;" role="img" aria-label="Repository with four runnable artifacts">
+          <rect class="box hl" x="20" y="18" width="300" height="40" rx="8"/><text class="ta" x="170" y="43" text-anchor="middle" font-size="13">github.com/xuwudawei/rag-unlearning</text>
+          <line class="ln a" x1="320" y1="38" x2="366" y2="38" marker-end="url(#aha)"/>
+          <rect class="box" x="368" y="18" width="140" height="40" rx="8"/><text class="tm" x="438" y="43" text-anchor="middle" font-size="12">reproduction</text>
+          <rect class="box" x="516" y="18" width="90" height="40" rx="8"/><text class="tm" x="561" y="43" text-anchor="middle" font-size="12">guard</text>
+          <rect class="box" x="614" y="18" width="120" height="40" rx="8"/><text class="tm" x="674" y="43" text-anchor="middle" font-size="12">estimator</text>
+          <rect class="box" x="742" y="18" width="120" height="40" rx="8"/><text class="tm" x="802" y="43" text-anchor="middle" font-size="12">web UI</text>
+        </svg>
       </div>
     </div>
     <div class="rfoot"><span>References</span><span>thank you</span></div>
