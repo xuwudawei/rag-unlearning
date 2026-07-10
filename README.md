@@ -33,6 +33,12 @@ demonstrates GPT-4o, Gemini, PaLM 2). Access model: **API-only.**
    - **Min-K% MIA** — residual-memorisation TPR@1%FPR (needs an open-weights backend
      that exposes token logprobs; skipped gracefully on closed APIs).
 
+## Presentation
+
+An academic slide deck covering the reproduction, the critique, and the answer
+correction inversion lives at `docs/slides.html` (open it in a browser; arrow keys
+navigate). It is self contained and needs no server.
+
 ## Which APIs are needed
 
 You need **exactly one chat LLM** — everything else is optional or local:

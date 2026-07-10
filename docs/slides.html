@@ -1,0 +1,434 @@
+<title>RAG Unlearning: Reproduction, Critique, Inversion</title>
+<style>
+  :root{
+    --bg:#eceff2; --panel:#fbfcfd; --sunk:#f1f4f6; --ink:#181b20; --muted:#5c646e;
+    --line:#d7dce2; --hair:#c6ccd4; --accent:#8c2f39; --accent-soft:#8c2f3915;
+    --good:#2f7150; --good-soft:#2f715015; --warn:#8a6412; --warn-soft:#8a641215;
+    --serif:Georgia,'Iowan Old Style','Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,sans-serif;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#0d0f12; --panel:#15181d; --sunk:#1b1f25; --ink:#e8ebef; --muted:#98a1ac;
+      --line:#282d34; --hair:#333941; --accent:#cf6a72; --accent-soft:#cf6a7218;
+      --good:#5bb487; --good-soft:#5bb48718; --warn:#cf9a3f; --warn-soft:#cf9a3f18; }
+  }
+  :root[data-theme="dark"]{ --bg:#0d0f12; --panel:#15181d; --sunk:#1b1f25; --ink:#e8ebef; --muted:#98a1ac;
+    --line:#282d34; --hair:#333941; --accent:#cf6a72; --accent-soft:#cf6a7218;
+    --good:#5bb487; --good-soft:#5bb48718; --warn:#cf9a3f; --warn-soft:#cf9a3f18; }
+  :root[data-theme="light"]{ --bg:#eceff2; --panel:#fbfcfd; --sunk:#f1f4f6; --ink:#181b20; --muted:#5c646e;
+    --line:#d7dce2; --hair:#c6ccd4; --accent:#8c2f39; --accent-soft:#8c2f3915;
+    --good:#2f7150; --good-soft:#2f715015; --warn:#8a6412; --warn-soft:#8a641215; }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+    -webkit-font-smoothing:antialiased;}
+  .deck{width:min(96vw,1080px);aspect-ratio:16/9;position:relative;}
+  .slide{position:absolute;inset:0;background:var(--panel);border:1px solid var(--line);
+    padding:clamp(20px,3vw,42px) clamp(24px,3.6vw,52px);
+    display:none;flex-direction:column;overflow:hidden;
+    box-shadow:0 24px 60px -30px #000a;}
+  .slide.active{display:flex;}
+  @media (prefers-reduced-motion:no-preference){
+    .slide.active{animation:rise .34s cubic-bezier(.2,.7,.2,1);}
+    @keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  }
+
+  /* running head, like a journal */
+  .rhead{display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);padding-bottom:.5rem;border-bottom:1px solid var(--hair);}
+  .rhead .sec{color:var(--accent);font-weight:600;}
+  .rhead .idx b{color:var(--ink);}
+
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--accent);font-weight:600;margin-top:1rem;}
+  h1{font-family:var(--serif);font-weight:600;text-wrap:balance;line-height:1.06;
+    letter-spacing:-.01em;margin:.4rem 0;}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.4rem,3.1vw,2.15rem);
+    line-height:1.1;margin:.35rem 0 .2rem;text-wrap:balance;letter-spacing:-.01em;}
+  p,li{color:var(--ink);line-height:1.5;}
+  .sub{color:var(--muted);}
+  .body{flex:1;display:flex;flex-direction:column;gap:.85rem;justify-content:center;}
+  .lede{font-size:clamp(.98rem,1.55vw,1.16rem);max-width:62ch;color:var(--muted);line-height:1.46;}
+
+  ul{margin:.1rem 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:.6rem;}
+  ul li{position:relative;padding-left:1.3rem;max-width:70ch;font-size:clamp(.9rem,1.35vw,1.03rem);}
+  ul li::before{content:"";position:absolute;left:0;top:.66em;width:.5rem;height:2px;background:var(--accent);}
+
+  .grid{display:grid;gap:1px;background:var(--hair);border:1px solid var(--hair);}
+  .grid.cols-2{grid-template-columns:1fr 1fr;} .grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  @media (max-width:640px){.grid.cols-2,.grid.cols-3{grid-template-columns:1fr;}}
+  .cell{background:var(--panel);padding:.95rem 1.05rem;}
+  .cell h3{margin:0 0 .35rem;font-size:.95rem;font-family:var(--sans);font-weight:600;}
+  .cell p{margin:0;font-size:.85rem;color:var(--muted);line-height:1.44;}
+  .cell .t{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;display:block;margin-bottom:.35rem;}
+
+  .figrow{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair);
+    border:1px solid var(--hair);}
+  .fig{background:var(--panel);padding:1rem 1.05rem;}
+  .metric{font-family:var(--mono);font-variant-numeric:tabular-nums;
+    font-size:clamp(1.7rem,4vw,2.5rem);font-weight:600;letter-spacing:-.03em;line-height:1;color:var(--ink);}
+  .metric.good{color:var(--good);} .metric.warn{color:var(--warn);} .metric.acc{color:var(--accent);}
+  .fig .cap{margin-top:.5rem;font-size:.82rem;color:var(--ink);}
+  .fig .cap small{display:block;color:var(--muted);font-size:.74rem;margin-top:.12rem;}
+
+  .tags{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.2rem;}
+  .tag{font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;padding:.28rem .6rem;
+    border:1px solid var(--hair);color:var(--muted);background:var(--sunk);}
+  .tag.good{color:var(--good);border-color:var(--good-soft);background:var(--good-soft);}
+  .tag.warn{color:var(--warn);border-color:var(--warn-soft);background:var(--warn-soft);}
+  .tag.acc{color:var(--accent);border-color:var(--accent-soft);background:var(--accent-soft);}
+
+  code{font-family:var(--mono);font-size:.88em;color:var(--accent);}
+  .kv{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.84rem;color:var(--muted);}
+
+  .callout{border:1px solid var(--hair);border-left:3px solid var(--accent);
+    background:var(--sunk);padding:.85rem 1.05rem;}
+  .callout.good{border-left-color:var(--good);}
+  .callout.warn{border-left-color:var(--warn);}
+  .callout h3{margin:0 0 .3rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .callout p{margin:0;font-size:.9rem;line-height:1.46;}
+
+  table{border-collapse:collapse;width:100%;font-size:.85rem;}
+  th,td{text-align:left;padding:.46rem .2rem;border-bottom:1px solid var(--hair);vertical-align:top;}
+  th{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);font-weight:600;}
+  td:first-child{padding-right:1.4rem;font-weight:500;}
+  td:last-child{color:var(--muted);font-family:var(--mono);font-size:.78rem;}
+
+  .flow{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair);}
+  .flow .node{background:var(--panel);padding:.9rem 1rem;}
+  .flow .node .t{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;}
+  .flow .node p{margin:.3rem 0 0;font-size:.82rem;color:var(--muted);line-height:1.42;}
+
+  .refs{columns:2;column-gap:2.4rem;font-size:.8rem;color:var(--muted);line-height:1.5;}
+  @media (max-width:640px){.refs{columns:1;}}
+  .refs div{break-inside:avoid;margin-bottom:.55rem;}
+  .refs b{color:var(--ink);font-weight:600;}
+
+  .rfoot{display:flex;justify-content:space-between;align-items:center;
+    padding-top:.55rem;margin-top:.4rem;border-top:1px solid var(--hair);
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;color:var(--muted);}
+
+  .prog{position:absolute;left:0;bottom:0;height:3px;background:var(--accent);transition:width .34s ease;}
+
+  .title-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:1.05rem;}
+  .rule{width:44px;height:3px;background:var(--accent);}
+  .metaline{display:flex;flex-wrap:wrap;gap:.55rem;align-items:center;}
+
+  .nav{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:.3rem;
+    align-items:center;background:var(--panel);border:1px solid var(--line);
+    padding:.28rem .42rem;box-shadow:0 10px 30px -14px #0008;z-index:10;}
+  .nav button{font-family:var(--mono);font-size:.78rem;background:transparent;color:var(--ink);
+    border:0;padding:.32rem .7rem;cursor:pointer;letter-spacing:.03em;}
+  .nav button:hover{color:var(--accent);}
+  .nav button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .nav .count{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.74rem;
+    color:var(--muted);min-width:3.4rem;text-align:center;}
+</style>
+
+<div class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide active">
+    <div class="rhead"><span class="sec">Title</span><span class="idx"><b>01</b> / 13</span></div>
+    <div class="title-wrap">
+      <div class="eyebrow" style="margin:0;">Reproduction study on black box LLM unlearning</div>
+      <div class="rule"></div>
+      <h1 style="font-size:clamp(1.9rem,4.8vw,3.15rem);">Teaching a language model to forget, with no retraining. Then turning the same idea into answer correction.</h1>
+      <p class="lede" style="max-width:66ch;">A faithful reimplementation of a RAG based unlearning method, an analysis
+        of where it fails, and a new direction. From suppressing answers inside a system you own,
+        to correcting what public models say about an entity.</p>
+      <div class="metaline">
+        <span class="tag acc">Reproduction, critique, prototype</span>
+        <span class="kv">Base paper: arXiv:2410.15267</span>
+        <span class="kv">Code: github.com/xuwudawei/rag-unlearning</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <div class="rhead"><span class="sec">Motivation</span><span class="idx"><b>02</b> / 13</span></div>
+    <div class="body">
+      <h2>Why make a trained model forget?</h2>
+      <p class="lede">Regulation, copyright, and safety all demand removing specific knowledge from a
+        model that is already deployed. Retraining a frontier model for every request is not affordable.</p>
+      <div class="grid cols-3">
+        <div class="cell"><span class="t">The constraint</span><p>Commercial models expose only an
+          interface. No weights, no gradients. A method has to work from the outside, without training.</p></div>
+        <div class="cell"><span class="t">The gap</span><p>Most unlearning methods fine tune the
+          weights and risk damaging the rest of the model. They cannot be applied to closed models at all.</p></div>
+        <div class="cell"><span class="t">The idea under test</span><p>Use retrieval as the control
+          surface. Change what the model reads, rather than what the model is.</p></div>
+      </div>
+    </div>
+    <div class="rfoot"><span>Motivation</span><span>arXiv:2410.15267</span></div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <div class="rhead"><span class="sec">Base paper</span><span class="idx"><b>03</b> / 13</span></div>
+    <div class="body">
+      <h2>When Machine Unlearning Meets RAG</h2>
+      <p class="kv">Wang, Zhu, Ye, Zhou. City University of Macau. arXiv:2410.15267. No official code was released.</p>
+      <div class="grid cols-2">
+        <div class="cell"><span class="t">Mechanism</span><p>Inject a knowledge entry
+          <code>k = P + Q</code> into the retrieval store. P makes the entry match questions about the
+          target. Q is a confidentiality clause that makes the model refuse.</p></div>
+        <div class="cell"><span class="t">Access model</span><p>Interface only. The provider controls
+          retrieval and never touches the weights. It works on closed models, where fine tuning based
+          methods cannot be applied.</p></div>
+      </div>
+      <ul>
+        <li>Framed as constrained optimization. Maximise forgetting over the knowledge store, subject to the entry being retrievable.</li>
+        <li>This is behavioural unlearning. It changes the output, not the parameters. That distinction drives the critique three slides on.</li>
+      </ul>
+    </div>
+    <div class="rfoot"><span>Base paper</span><span>Macau, 2024</span></div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <div class="rhead"><span class="sec">Method</span><span class="idx"><b>04</b> / 13</span></div>
+    <div class="body">
+      <h2>Algorithm 1, reproduced faithfully</h2>
+      <div class="grid cols-2">
+        <div class="cell"><span class="t">Construct the entries</span><p>Q is written by a helper model
+          and requeried until the frozen target refuses. P is a set of aspect descriptions that the
+          target writes about itself, which lifts retrieval rank. One entry per aspect.</p></div>
+        <div class="cell"><span class="t">Retrieve and generate</span><p>A hybrid retriever combines
+          keyword and embedding search. The prompt template joins the instruction, the question, and
+          the retrieved knowledge.</p></div>
+      </div>
+      <div class="grid cols-3">
+        <div class="cell"><span class="t">USR</span><p>Unlearning success rate. A judge model scores forgetting from the before and after answers.</p></div>
+        <div class="cell"><span class="t">ROUGE L recall</span><p>Overlap of the unlearned answer with the original. Lower means more forgetting.</p></div>
+        <div class="cell"><span class="t">Min K membership</span><p>Inference for leftover memorisation. Needs token probabilities, so it runs on the local model.</p></div>
+      </div>
+    </div>
+    <div class="rfoot"><span>Method</span><span>K = { Pi + Q }</span></div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <div class="rhead"><span class="sec">Reproduction</span><span class="idx"><b>05</b> / 13</span></div>
+    <div class="body">
+      <h2>It reproduces on a live model</h2>
+      <p class="kv">Reimplemented from scratch. Backends: DeepSeek, OpenAI, local model. The run below used live DeepSeek on a five concept seed set.</p>
+      <div class="figrow">
+        <div class="fig"><div class="metric good">92.0%</div><div class="cap">Unlearning success rate<small>paper reports about 99 percent</small></div></div>
+        <div class="fig"><div class="metric good">0.122</div><div class="cap">ROUGE L recall<small>paper about 0.03, lower is better</small></div></div>
+        <div class="fig"><div class="metric acc">5 / 5</div><div class="cap">concepts refusal verified<small>every entry induced a refusal</small></div></div>
+      </div>
+      <div class="tags">
+        <span class="tag good">Verified with a live API call</span>
+        <span class="tag good">8 logic tests and 3 live tests pass</span>
+        <span class="tag warn">Five concepts against the paper's hundred. The effect holds, the exact figure does not.</span>
+      </div>
+    </div>
+    <div class="rfoot"><span>Reproduction</span><span>live DeepSeek</span></div>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide">
+    <div class="rhead"><span class="sec">Critique</span><span class="idx"><b>06</b> / 13</span></div>
+    <div class="body">
+      <h2>Where the method breaks</h2>
+      <ul>
+        <li><b>Suppression is not forgetting.</b> The knowledge stays in the weights and the answer is
+          only intercepted at retrieval. A recent position paper makes exactly this complaint about the word unlearning.</li>
+        <li><b>Fragile to injection, by their own Table XII.</b> An attacker who leaks part of the entry
+          and appends an override drives success down to 20.9 percent.</li>
+        <li><b>Retrieval is a single point of failure.</b> A paraphrase, a translated question, or a multistep query can miss the entry entirely.</li>
+        <li><b>Excess refusals are never measured.</b> The paper tests MMLU and ARC, which contain none
+          of the forgotten topics, so damage to neighbouring topics stays invisible.</li>
+      </ul>
+      <div class="tags">
+        <span class="tag warn">Success falls from 99 percent to 20.9 percent under attack</span>
+        <span class="tag warn">The authors leave the defense to future work</span>
+      </div>
+    </div>
+    <div class="rfoot"><span>Critique</span><span>Table XII</span></div>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide">
+    <div class="rhead"><span class="sec">Contribution 1</span><span class="idx"><b>07</b> / 13</span></div>
+    <div class="body">
+      <h2>A defense that does not rely on obedience</h2>
+      <p class="lede">The paper's forgetting only holds while the model obeys the retrieved clause. We add
+        two layers that do not depend on the model obeying anything.</p>
+      <div class="grid cols-2">
+        <div class="cell"><span class="t">Input guard</span><p>Detect override and injection patterns, then reassert the constraint before the model answers.</p></div>
+        <div class="cell"><span class="t">Output gate</span><p>Independent of the model. If a question about a forgotten topic yields target content, replace it with a refusal after generation, so an injection cannot leak it.</p></div>
+      </div>
+      <div class="callout warn">
+        <h3>Honest negative result</h3>
+        <p>On a well behaved model the baseline never collapsed, since it refused on its own. So the
+          guard showed no gain here and it added excess refusals, from 40 to 60 percent. Its value needs
+          a genuinely jailbreakable target. Reported, not hidden.</p>
+      </div>
+    </div>
+    <div class="rfoot"><span>Contribution 1</span><span>defense in depth</span></div>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide">
+    <div class="rhead"><span class="sec">Key insight</span><span class="idx"><b>08</b> / 13</span></div>
+    <div class="body">
+      <h2>Three problems, one mechanism</h2>
+      <p class="lede">A retrieval augmented model is only as trustworthy as the context it retrieves.
+        Suppression, influence, and attack are the same lever pulled from different ends.</p>
+      <div class="flow">
+        <div class="node"><div class="t">Unlearning</div><p>The owner injects entries to suppress an answer.</p></div>
+        <div class="node"><div class="t">Answer optimisation</div><p>An outside party shapes the web to influence an answer.</p></div>
+        <div class="node"><div class="t">RAG poisoning</div><p>An attacker injects sources to corrupt an answer.</p></div>
+      </div>
+      <p class="sub" style="font-size:.92rem;line-height:1.5;">So the paper we reproduced is the defensive
+        half of a mechanism whose corrective half is a real and unbuilt product. Measuring, then fixing,
+        what models say about an entity.</p>
+    </div>
+    <div class="rfoot"><span>Key insight</span><span>the inversion</span></div>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide">
+    <div class="rhead"><span class="sec">Contribution 2</span><span class="idx"><b>09</b> / 13</span></div>
+    <div class="body">
+      <h2>Answer Estimator. Invert the optimization.</h2>
+      <p class="lede">Rather than suppress an answer inside a store you own, measure what the model says
+        about an entity, find which sources drive it, and predict the cheapest legitimate correction. This ran on live DeepSeek.</p>
+      <div class="grid cols-3">
+        <div class="cell"><span class="t">1 · Measure</span><p>Probe the model several ways. The false claim appeared 80 percent of the time.</p></div>
+        <div class="cell"><span class="t">2 · Attribute</span><p>Remove one source at a time to see which sources drive the claim.</p></div>
+        <div class="cell"><span class="t">3 · Intervene</span><p>Predict the effect of each legitimate action and recommend the cheapest.</p></div>
+      </div>
+      <div class="callout good">
+        <h3>Result on the worked example</h3>
+        <p>Publishing a corrective statement on your own site takes the claim rate from 80 percent to 0
+          percent at the lowest cost, ahead of third party takedowns. Unlike a monitoring dashboard, this
+          is causal and predictive. It says what to do and the expected result.</p>
+      </div>
+    </div>
+    <div class="rfoot"><span>Contribution 2</span><span>estimator prototype</span></div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide">
+    <div class="rhead"><span class="sec">Grounding</span><span class="idx"><b>10</b> / 13</span></div>
+    <div class="body">
+      <h2>The prototype has academic ancestry</h2>
+      <p class="lede">The estimator is a synthesis rather than one paper. Every ingredient is published work.</p>
+      <table>
+        <thead><tr><th>Component</th><th>Grounded in</th></tr></thead>
+        <tbody>
+          <tr><td>Source attribution by context ablation</td><td>ContextCite. Cohen&#8209;Wang, Madry et al. NeurIPS 2024. arXiv:2409.00729</td></tr>
+          <tr><td>Leave one out influence</td><td>Koh and Liang. ICML 2017</td></tr>
+          <tr><td>Attribution hardening, the next step</td><td>SHAP 2017. Data Shapley, ICML 2019</td></tr>
+          <tr><td>A few sources can control a RAG answer</td><td>PoisonedRAG. arXiv:2402.07867</td></tr>
+          <tr><td>Shaping generative engine answers</td><td>GEO. Aggarwal et al. KDD 2024. arXiv:2311.09735</td></tr>
+        </tbody>
+      </table>
+      <p class="sub" style="font-size:.9rem;line-height:1.5;">Position. The estimator is ContextCite style
+        attribution, plus a minimal intervention optimiser, plus the base paper's optimization run in reverse, from suppress to correct.</p>
+    </div>
+    <div class="rfoot"><span>Grounding</span><span>method ancestry</span></div>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide">
+    <div class="rhead"><span class="sec">Validity</span><span class="idx"><b>11</b> / 13</span></div>
+    <div class="body">
+      <h2>What I do not claim</h2>
+      <ul>
+        <li><b>Reproduction scale.</b> Five topics against the paper's hundred. The effect reproduces. This is not a full replication.</li>
+        <li><b>Membership inference</b> runs only on the local open model, since interfaces do not expose input token probabilities.</li>
+        <li><b>The guard's benefit is unproven</b> and it currently trades excess refusals. It needs a jailbreakable target to show value.</li>
+        <li><b>Estimator attribution is a first version and noisy.</b> Five probes and a model that varies
+          run to run make the per source numbers wobble. It needs Shapley values, more probes, and repeated sampling with confidence intervals.</li>
+        <li><b>A controlled source set, not the live web.</b> A faithful proxy. Real citation grounded
+          engines such as Perplexity and ChatGPT Search are the next integration.</li>
+      </ul>
+    </div>
+    <div class="rfoot"><span>Validity</span><span>threats and honesty</span></div>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide">
+    <div class="rhead"><span class="sec">Future work</span><span class="idx"><b>12</b> / 13</span></div>
+    <div class="body">
+      <h2>Open questions worth a paper</h2>
+      <div class="grid cols-2">
+        <div class="cell"><span class="t">Harden attribution</span><p>Shapley value source influence with confidence intervals, checked against ContextCite.</p></div>
+        <div class="cell"><span class="t">Live grounded engines</span><p>Causal attribution on the real citations returned by Perplexity and ChatGPT Search.</p></div>
+        <div class="cell"><span class="t">Verifiable unlearning</span><p>Removal backed by a certificate. Adversarial probes, membership evidence, and an audit trail.</p></div>
+        <div class="cell"><span class="t">Answer integrity monitor</span><p>Detect poisoning from the gap between the predicted answer and the observed one.</p></div>
+      </div>
+      <div class="callout">
+        <h3>Summary</h3>
+        <p>Reproduced a black box unlearning method on a live model, showed where it fails, and prototyped
+          an inversion from suppression to causal, predictive answer correction, grounded in ContextCite and influence function theory.</p>
+      </div>
+    </div>
+    <div class="rfoot"><span>Future work</span><span>and summary</span></div>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide">
+    <div class="rhead"><span class="sec">References</span><span class="idx"><b>13</b> / 13</span></div>
+    <div class="body">
+      <h2>References and artifacts</h2>
+      <div class="refs">
+        <div>[1] Wang, Zhu, Ye, Zhou. <b>When Machine Unlearning Meets RAG.</b> arXiv:2410.15267.</div>
+        <div>[2] Cohen&#8209;Wang, Shah, Georgiev, Madry. <b>ContextCite.</b> NeurIPS 2024. arXiv:2409.00729.</div>
+        <div>[3] Koh, Liang. <b>Understanding Black Box Predictions via Influence Functions.</b> ICML 2017.</div>
+        <div>[4] Lundberg, Lee. <b>A Unified Approach to Interpreting Model Predictions.</b> NeurIPS 2017.</div>
+        <div>[5] Ghorbani, Zou. <b>Data Shapley.</b> ICML 2019.</div>
+        <div>[6] Zou et al. <b>PoisonedRAG.</b> arXiv:2402.07867.</div>
+        <div>[7] Aggarwal et al. <b>GEO: Generative Engine Optimization.</b> KDD 2024. arXiv:2311.09735.</div>
+        <div>[8] Shi et al. <b>Detecting Pretraining Data (Min K).</b> ICLR 2024.</div>
+      </div>
+      <div class="callout" style="border-left-color:var(--accent);">
+        <h3>Runnable artifacts</h3>
+        <p>Reproduction, guard, estimator, and a web interface. All at
+          github.com/xuwudawei/rag-unlearning, runnable against a live model.</p>
+      </div>
+    </div>
+    <div class="rfoot"><span>References</span><span>thank you</span></div>
+  </section>
+
+  <div class="prog" id="prog"></div>
+</div>
+
+<div class="nav">
+  <button id="prev" aria-label="Previous slide">Prev</button>
+  <span class="count" id="count">1 / 13</span>
+  <button id="next" aria-label="Next slide">Next</button>
+</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const prog=document.getElementById('prog'),count=document.getElementById('count');
+  let i=0;
+  function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    prog.style.width=((i+1)/slides.length*100)+'%';
+    count.textContent=(i+1)+' / '+slides.length;
+  }
+  document.getElementById('next').onclick=()=>show(i+1);
+  document.getElementById('prev').onclick=()=>show(i-1);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();show(i+1);}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();show(i-1);}
+    if(e.key==='Home'){show(0);} if(e.key==='End'){show(slides.length-1);}
+  });
+  show(0);
+</script>
