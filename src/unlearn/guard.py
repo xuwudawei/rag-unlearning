@@ -90,9 +90,15 @@ class GuardedPipeline:
         return False
 
     def answer(self, question: str) -> GuardedAnswer:
-        input_flagged = _looks_injected(question)
+        """Convenience path: generate then guard (one LLM call inside)."""
+        return self.evaluate(self._pipe.answer(question))
 
-        result: RagAnswer = self._pipe.answer(question)
+    def evaluate(self, result: RagAnswer) -> GuardedAnswer:
+        """Apply the guard to an already-generated answer — NO LLM call.
+
+        Used by the serving path so /api/ask reuses the unlearned pipeline's answer
+        instead of paying a redundant third generation."""
+        input_flagged = _looks_injected(result.question)
         retrieved_target = _retrieved_target(result)
 
         # Output gate: if this query is forget-related and the model leaked target
@@ -108,7 +114,7 @@ class GuardedPipeline:
             output_blocked = True
 
         return GuardedAnswer(
-            question=question,
+            question=result.question,
             answer=final,
             original_model_answer=result.answer,
             used_unlearned=result.used_unlearned,

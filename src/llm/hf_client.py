@@ -12,6 +12,7 @@ from __future__ import annotations
 from typing import Sequence
 
 from .base import LLMError
+from .embedders import build_embedder
 
 
 def _pick_device():
@@ -27,7 +28,6 @@ def _pick_device():
 class HFClient:
     def __init__(self, cfg) -> None:
         import torch
-        from sentence_transformers import SentenceTransformer
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
         self._cfg = cfg
@@ -44,8 +44,8 @@ class HFClient:
         except Exception as exc:  # noqa: BLE001
             raise LLMError(f"Failed to load HF model '{model_id}': {exc}") from exc
 
-        # Lightweight, real semantic embedder for the hybrid retriever.
-        self._embedder = SentenceTransformer(cfg.embed_model, device=self._device)
+        # Pluggable embedder (default hashing; set UNLEARN_EMBEDDER=st for MiniLM).
+        self._embedder = build_embedder(cfg, device=self._device)
 
     # --- generation ------------------------------------------------------
     def _run_chat(self, system: str, user: str) -> str:
@@ -78,10 +78,7 @@ class HFClient:
 
     # --- embeddings ------------------------------------------------------
     def embed(self, texts: Sequence[str]) -> list[list[float]]:
-        if not texts:
-            return []
-        vecs = self._embedder.encode(list(texts), normalize_embeddings=True)
-        return [v.tolist() for v in vecs]
+        return self._embedder.embed(texts)
 
     # --- per-token logprobs (enables Min-K% MIA) -------------------------
     def token_logprobs(self, text: str) -> list[float]:

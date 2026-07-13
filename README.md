@@ -46,15 +46,16 @@ You need **exactly one chat LLM** — everything else is optional or local:
 | Component | Requirement | Notes |
 |---|---|---|
 | Chat LLM (target + helper + judge) | **1 API OR a local model** | DeepSeek, OpenAI/GPT-4o, or local `hf` (Qwen/Llama) |
-| Embeddings (retriever's semantic half) | **none / local** | uses local `sentence-transformers`; only `openai` uses its embedding API |
+| Embeddings (retriever's semantic half) | **none by default** | torch-free numpy `HashingEmbedder`; set `UNLEARN_EMBEDDER=openai`/`st` to upgrade |
 | Min-K% MIA metric | **local model only** | no chat API exposes input-token logprobs — needs the `hf` backend |
 
-So: **DeepSeek key alone is enough** to run the full USR + ROUGE reproduction and the UI.
+So: **DeepSeek key alone is enough** to run the reproduction, the UI, and the hosted deploy.
 
 ## Run it
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt        # slim deploy runtime (torch-free)
+pip install -r requirements-dev.txt    # + torch stack for the local `hf` provider & eval
 
 # ---- DeepSeek (single API key; embeddings run locally) ----
 export UNLEARN_PROVIDER=deepseek
@@ -94,16 +95,39 @@ are stable and correct (e.g. "publish an owned corrective statement → claim ra
 variants, repeated sampling with confidence intervals, Shapley instead of naive
 leave-one-out). Do not trust individual source-influence numbers yet.
 
-### Web UI
+### Web UI (local)
 
 ```bash
-UNLEARN_PROVIDER=deepseek DEEPSEEK_API_KEY=sk-... \
-  uvicorn app:app --port 8000
+# 1) build the demo knowledge base once (offline; needs a live chat key)
+UNLEARN_PROVIDER=deepseek DEEPSEEK_API_KEY=sk-... python scripts/precompute_kb.py
+
+# 2) serve it (torch-free, stateless)
+UNLEARN_PROVIDER=deepseek DEEPSEEK_API_KEY=sk-... uvicorn src.web.server:app --port 8000
 # open http://localhost:8000
 ```
-Enter concepts to forget, build the unlearning set, then ask questions and watch
-**original vs unlearned (paper) vs guarded (our fix)** side by side. Toggle
-**Adaptive attack mode** to fire a prompt-injection override and see the guard react.
+Ask about any of the five forgotten concepts and watch **original (the model's real
+answer) vs unlearned (the paper's refusal) vs guarded (our fix)** side by side. Toggle
+**Adaptive attack mode** to fire a prompt-injection override and see the guard block the leak.
+
+## Deploy to Vercel
+
+The app is torch-free and stateless, so it runs as a single Vercel Python function.
+All construction is precomputed into `data/demo_kb.json`; each request makes just two
+chat calls. See `api/index.py` and `vercel.json`.
+
+```bash
+# once: build & commit the demo KB
+UNLEARN_PROVIDER=deepseek DEEPSEEK_API_KEY=sk-... python scripts/precompute_kb.py
+git add data/demo_kb.json && git commit -m "chore: demo KB"
+
+vercel link
+vercel env add DEEPSEEK_API_KEY production     # paste the key
+vercel env add UNLEARN_PROVIDER production      # value: deepseek
+vercel env add UNLEARN_EMBEDDER production      # value: hashing
+vercel deploy --prod
+```
+Runtime env: `UNLEARN_PROVIDER=deepseek`, `UNLEARN_EMBEDDER=hashing`, `DEEPSEEK_API_KEY`.
+Embeddings are computed locally (numpy), so no embedding API or torch ships to Vercel.
 
 ## Our improvement over the paper
 

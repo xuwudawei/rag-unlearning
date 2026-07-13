@@ -5,9 +5,11 @@ import time
 from typing import Sequence
 
 from .base import LLMError
+from .embedders import OpenAIEmbedder, build_embedder
 
-_MAX_RETRIES = 4
+_MAX_RETRIES = 3
 _BACKOFF_SECONDS = 2.0
+_TIMEOUT = 30.0
 
 
 class OpenAIClient:
@@ -20,8 +22,14 @@ class OpenAIClient:
         # Imported lazily so other providers don't require the OpenAI SDK.
         from openai import OpenAI
 
-        self._client = OpenAI(api_key=cfg.api_key)
+        self._client = OpenAI(api_key=cfg.api_key, timeout=_TIMEOUT, max_retries=0)
         self._cfg = cfg
+        # With an OpenAI key present, default to real OpenAI embeddings unless the
+        # user explicitly picked another embedder.
+        self._embedder = (
+            OpenAIEmbedder(cfg) if getattr(cfg, "embedder", "hashing") == "hashing"
+            else build_embedder(cfg)
+        )
 
     def _chat(self, model: str, system: str, user: str) -> str:
         last_err: Exception | None = None
@@ -54,12 +62,4 @@ class OpenAIClient:
         return self._chat(model, system, user)
 
     def embed(self, texts: Sequence[str]) -> list[list[float]]:
-        if not texts:
-            return []
-        try:
-            resp = self._client.embeddings.create(
-                model=self._cfg.embed_model, input=list(texts)
-            )
-        except Exception as exc:  # noqa: BLE001
-            raise LLMError(f"OpenAI embedding call failed: {exc}") from exc
-        return [item.embedding for item in resp.data]
+        return self._embedder.embed(texts)

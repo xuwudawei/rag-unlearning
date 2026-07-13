@@ -2,8 +2,9 @@
 
 DeepSeek's chat API is OpenAI-compatible (just a different base_url + model id), so
 it drives generation for every LLM role (target LLM_un, helper LLM_cons, judge).
-DeepSeek has NO embeddings endpoint, so the retriever's semantic half uses a local
-sentence-transformers model — no second API is required.
+DeepSeek has NO embeddings endpoint, so the retriever's semantic half uses a
+pluggable embedder (default: the torch-free numpy HashingEmbedder) — no second API
+and no torch, which is what lets this provider deploy to serverless.
 
 Min-K% MIA needs per-token logprobs on arbitrary *input* text, which no chat API
 exposes; MIA is therefore unavailable on this backend (use the local `hf` backend).
@@ -14,10 +15,12 @@ import time
 from typing import Sequence
 
 from .base import LLMError
+from .embedders import build_embedder
 
 _BASE_URL = "https://api.deepseek.com"
-_MAX_RETRIES = 4
+_MAX_RETRIES = 3
 _BACKOFF_SECONDS = 2.0
+_TIMEOUT = 30.0
 
 
 class DeepSeekClient:
@@ -27,12 +30,11 @@ class DeepSeekClient:
                 "DEEPSEEK_API_KEY is not set. Export it before using the deepseek provider."
             )
         from openai import OpenAI
-        from sentence_transformers import SentenceTransformer
 
-        self._client = OpenAI(api_key=cfg.api_key, base_url=_BASE_URL)
+        self._client = OpenAI(api_key=cfg.api_key, base_url=_BASE_URL,
+                              timeout=_TIMEOUT, max_retries=0)
         self._cfg = cfg
-        # Local embedder for genuine semantic retrieval (DeepSeek has no embeddings API).
-        self._embedder = SentenceTransformer(cfg.embed_model)
+        self._embedder = build_embedder(cfg)
 
     def _chat(self, system: str, user: str) -> str:
         last_err: Exception | None = None
@@ -64,7 +66,4 @@ class DeepSeekClient:
         return self._chat(system, user)
 
     def embed(self, texts: Sequence[str]) -> list[list[float]]:
-        if not texts:
-            return []
-        vecs = self._embedder.encode(list(texts), normalize_embeddings=True)
-        return [v.tolist() for v in vecs]
+        return self._embedder.embed(texts)

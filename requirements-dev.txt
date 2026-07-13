@@ -1,0 +1,10 @@
+# Full research + local stack (NOT deployed). Installs the slim runtime plus the
+# torch stack used by the local `hf` provider, the `st` embedder, and the eval scripts.
+-r requirements.txt
+uvicorn>=0.29
+pytest>=8
+rouge-score>=0.1.2
+scikit-learn>=1.4
+torch>=2.2
+transformers>=4.40
+sentence-transformers>=3.0

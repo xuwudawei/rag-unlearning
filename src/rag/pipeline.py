@@ -37,8 +37,8 @@ class RagPipeline:
         self._retriever = retriever
         self._client = client
 
-    def answer(self, question: str) -> RagAnswer:
-        hits = self._retriever.retrieve(question)
+    def answer(self, question: str, query_vec: list[float] | None = None) -> RagAnswer:
+        hits = self._retriever.retrieve(question, query_vec=query_vec)
         retrieved_text = "\n\n".join(h.entry.text for h in hits)
         used_unlearned = any(h.entry.kind == "unlearned" for h in hits)
         user_prompt = _build_user_prompt(question, retrieved_text)

@@ -49,12 +49,14 @@
 <main>
 
   <div class="card">
-    <label>1 · Concepts to forget (comma-separated)</label>
+    <label>1 · Concepts already forgotten (precomputed for this hosted demo)</label>
     <div class="row">
       <input id="concepts" type="text" style="flex:1"
-             value="Harry Potter, Bitcoin, Elon Musk" />
-      <button id="buildBtn" onclick="buildUnlearn()">Build unlearning set</button>
+             value="Harry Potter, The Lord of the Rings, Elon Musk, The Eiffel Tower, Bitcoin" />
+      <button id="buildBtn" onclick="buildUnlearn()">Show unlearning set</button>
     </div>
+    <div class="muted" style="margin-top:8px; font-size:12px">
+      The hosted demo uses a fixed set of five forgotten concepts. Ask about any of them below.</div>
     <div id="buildOut" class="muted" style="margin-top:10px"></div>
   </div>
 

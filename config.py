@@ -20,6 +20,8 @@ class LLMConfig:
     helper_model: str = os.getenv("UNLEARN_HELPER_MODEL", "Qwen/Qwen2.5-3B-Instruct")
     judge_model: str = os.getenv("UNLEARN_JUDGE_MODEL", "Qwen/Qwen2.5-3B-Instruct")
     embed_model: str = os.getenv("UNLEARN_EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+    # Embedder implementation: "hashing" (numpy, torch-free, default) | "openai" | "st".
+    embedder: str = os.getenv("UNLEARN_EMBEDDER", "hashing")
     api_key: str = os.getenv("OPENAI_API_KEY", "")
     temperature: float = 0.0
     max_tokens: int = 384
@@ -32,7 +34,9 @@ class RetrieverConfig:
     top_k: int = 1              # paper returns the single most relevant unlearned entry
     semantic_weight: float = 0.5
     lexical_weight: float = 0.5
-    min_score: float = 0.0      # retrieval floor; below this nothing is injected
+    min_score: float = 0.0      # fused-score floor; below this nothing is injected
+    min_lexical: float = 0.0    # absolute raw-BM25 floor: 0 disables; >0 gates injection
+                                # to genuine lexical matches (used by the hosted demo)
 
 
 @dataclass(frozen=True)
@@ -72,6 +76,7 @@ def load_config() -> Config:
         helper_model=os.getenv("UNLEARN_HELPER_MODEL", target),
         judge_model=os.getenv("UNLEARN_JUDGE_MODEL", target),
         embed_model=os.getenv("UNLEARN_EMBED_MODEL", embed_default),
+        embedder=os.getenv("UNLEARN_EMBEDDER", "hashing"),
         api_key=os.getenv(key_env, "") if key_env else "",
     )
     return Config(llm=llm)
