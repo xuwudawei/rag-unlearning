@@ -60,6 +60,8 @@ _PROVIDER_DEFAULTS = {
     "hf": ("Qwen/Qwen2.5-3B-Instruct", "sentence-transformers/all-MiniLM-L6-v2", None),
     "deepseek": ("deepseek-chat", "sentence-transformers/all-MiniLM-L6-v2", "DEEPSEEK_API_KEY"),
     "openai": ("gpt-4o", "text-embedding-3-small", "OPENAI_API_KEY"),
+    # One key for every closed model the paper uses (GPT-4o/mini/4, Gemini).
+    "openrouter": ("openai/gpt-4o", "sentence-transformers/all-MiniLM-L6-v2", "OPENROUTER_API_KEY"),
 }
 
 

@@ -16,6 +16,9 @@ def build_client(cfg):
         if provider == "openai":
             from .openai_client import OpenAIClient
             return OpenAIClient(cfg)
+        if provider == "openrouter":
+            from .openrouter_client import OpenRouterClient
+            return OpenRouterClient(cfg)
     except ImportError as exc:
         raise LLMError(
             f"Provider '{provider}' needs the local research stack (torch/transformers). "

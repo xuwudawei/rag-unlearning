@@ -22,3 +22,6 @@ estimator.json
 
 # OS
 .DS_Store
+.vercel
+repro_*.json
+repro_*.log

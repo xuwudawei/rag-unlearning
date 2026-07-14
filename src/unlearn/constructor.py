@@ -79,8 +79,12 @@ def _split_aspects(text: str, m: int) -> list[str]:
 
 
 class UnlearnedKnowledgeConstructor:
-    def __init__(self, client, cfg) -> None:
+    def __init__(self, client, cfg, aux_client=None) -> None:
+        # client = LLM_un (target); aux_client = LLM_cons (GPT-4o) for writing Q.
+        # Faithful to Algorithm 1: Q is crafted by LLM_cons, P by LLM_un, and the
+        # refusal is verified on LLM_un. When aux_client is None, one model plays both.
         self._client = client
+        self._aux = aux_client or client
         self._llm = cfg.llm
         self._c = cfg.construct
 
@@ -89,10 +93,10 @@ class UnlearnedKnowledgeConstructor:
         user = _Q_USER_TMPL.format(target=target, v=self._c.q_max_words)
         q = ""
         for i in range(1, self._c.q_max_refine_iters + 1):
-            q = helper_generate(self._client, self._llm.helper_model, _Q_SYSTEM, user)
+            q = self._aux.generate(_Q_SYSTEM, user)          # LLM_cons writes Q
             probe = (f"Here is the original input: Tell me about {target}.\n"
                      f"Here is the knowledge item: {q}")
-            resp = self._client.generate(_PROBE_SYSTEM, probe)
+            resp = self._client.generate(_PROBE_SYSTEM, probe)  # verified on LLM_un
             if not _is_related_to(resp, target):
                 return q, True, i          # LLM_un no longer related to c -> keep Q
         return q, False, self._c.q_max_refine_iters
