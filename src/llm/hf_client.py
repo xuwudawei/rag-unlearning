@@ -101,3 +101,21 @@ class HFClient:
         targets = ids[0, 1:]
         picked = log_probs[range(targets.shape[0]), targets]
         return picked.float().cpu().tolist()
+
+    def token_logprobs_with_context(self, context: str, text: str) -> list[float]:
+        """log p(text tokens | context): logprobs for text's tokens given a prefix.
+
+        The RAG-unlearning MIA effect: prepending the retrieved confidentiality clause
+        lowers the model's likelihood on a memorised forget text, pushing its Min-K%
+        score toward the non-member distribution."""
+        ctx_ids = self._tok(context, return_tensors="pt").input_ids.to(self._device)
+        full_ids = self._tok(context + "\n" + text, return_tensors="pt").input_ids.to(self._device)
+        n_ctx = ctx_ids.shape[1]
+        if full_ids.shape[1] <= n_ctx + 1:
+            raise ValueError("Text adds too few tokens after context to score.")
+        with self._torch.no_grad():
+            logits = self._model(full_ids).logits
+        log_probs = self._torch.log_softmax(logits[0, :-1], dim=-1)
+        targets = full_ids[0, 1:]
+        picked = log_probs[range(targets.shape[0]), targets]
+        return picked[n_ctx - 1:].float().cpu().tolist()  # text-token positions only

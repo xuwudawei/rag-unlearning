@@ -19,8 +19,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from ..llm.factory import helper_generate
 from ..rag.knowledge import KnowledgeEntry
+from ..rag.pipeline import _SYSTEM_INSTRUCTION, _build_user_prompt
 
 # --- Q: constraint component (LLM_cons) ---------------------------------
 _Q_SYSTEM = "You write strict content-policy clauses."
@@ -28,6 +28,15 @@ _Q_USER_TMPL = (
     "This is my target concept/sample: [{target}].\n"
     "Please craft a confidentiality requirement that prevents an AI assistant from "
     "generating content about [{target}]. Limit the text to a maximum of {v} words."
+)
+# Escalation appended on retries: the paper's loop keeps refining Q until the target
+# actually refuses. Weak models (e.g. Llama-2-7b) need a more absolute clause.
+_Q_STRONGER = (
+    " The previous clause was too weak and the assistant still answered. Make the "
+    "requirement ABSOLUTE: the assistant MUST refuse outright, MUST NOT reveal any "
+    "information, names, examples, or partial or indirect details about the target, "
+    "and MUST NOT reference or quote the knowledge item; it may only say it cannot "
+    "help with that topic."
 )
 
 # --- P: retrieval component (LLM_un, concept case) ----------------------
@@ -37,13 +46,6 @@ _P_USER_TMPL = (
     "Please provide a comprehensive description of [{target}] from {m} different "
     "aspects. Limit each aspect to {v} words."
 )
-
-# Probe used by CRAFT_CONSTRAINT to test whether Q induces off-topic/refusal.
-_PROBE_SYSTEM = (
-    "You are an intelligent assistant. Respond to the input based on the retrieved "
-    "knowledge item, complying with any confidentiality requirement it states."
-)
-
 
 @dataclass(frozen=True)
 class ConstructResult:
@@ -89,16 +91,26 @@ class UnlearnedKnowledgeConstructor:
         self._c = cfg.construct
 
     # CRAFT_CONSTRAINT(LLM_cons, LLM_un, c)
-    def _craft_constraint(self, target: str) -> tuple[str, bool, int]:
-        user = _Q_USER_TMPL.format(target=target, v=self._c.q_max_words)
+    def _craft_constraint(self, target: str, p_context: str,
+                          probe_questions=None) -> tuple[str, bool, int]:
+        # Verify under the REAL inference conditions: the retrieved item is the actual
+        # P+Q entry, the system prompt is the paper's Fig-4 template, and we test the
+        # real questions (not a generic probe). Escalate Q until the target refuses.
+        probes = list(probe_questions or [])[:2] or [f"Tell me about {target}."]
+        base = _Q_USER_TMPL.format(target=target, v=self._c.q_max_words)
         q = ""
         for i in range(1, self._c.q_max_refine_iters + 1):
+            user = base if i == 1 else base + _Q_STRONGER
             q = self._aux.generate(_Q_SYSTEM, user)          # LLM_cons writes Q
-            probe = (f"Here is the original input: Tell me about {target}.\n"
-                     f"Here is the knowledge item: {q}")
-            resp = self._client.generate(_PROBE_SYSTEM, probe)  # verified on LLM_un
-            if not _is_related_to(resp, target):
-                return q, True, i          # LLM_un no longer related to c -> keep Q
+            item = f"{p_context}\n\n{q}" if p_context else q
+            refused_all = True
+            for pq in probes:
+                resp = self._client.generate(_SYSTEM_INSTRUCTION, _build_user_prompt(pq, item))
+                if _is_related_to(resp, target):
+                    refused_all = False
+                    break
+            if refused_all:
+                return q, True, i          # LLM_un refuses on the real questions
         return q, False, self._c.q_max_refine_iters
 
     # CRAFT_RETRIEVAL(LLM_un, c)
@@ -113,12 +125,14 @@ class UnlearnedKnowledgeConstructor:
         return _split_aspects(desc, self._c.p_num_aspects)
 
     def construct(self, target: str, entry_id_prefix: str,
-                  is_sample: bool = False) -> ConstructResult:
+                  is_sample: bool = False, probe_questions=None) -> ConstructResult:
         if not target or not target.strip():
             raise ValueError("Forget target must be a non-empty string.")
 
-        q, verified, iters = self._craft_constraint(target)
+        # Build P first so Q can be verified against the real P+Q entry the model sees.
         aspects = self._craft_retrieval(target, is_sample)
+        p_context = aspects[0] if aspects else ""
+        q, verified, iters = self._craft_constraint(target, p_context, probe_questions)
 
         # K = { P_i + Q }: one retrievable entry per aspect item.
         entries = tuple(

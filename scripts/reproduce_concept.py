@@ -107,7 +107,7 @@ def main() -> None:
             probes.append((topic, q))
         entries.append(KnowledgeEntry.benign(
             f"bk-{i}", f"General reference material. {topic} is a well-documented subject.", topic))
-        res = constructor.construct(topic, entry_id_prefix=f"uk-{i}")
+        res = constructor.construct(topic, entry_id_prefix=f"uk-{i}", probe_questions=qs)
         entries.extend(res.entries)
         verified += int(res.refusal_verified)
         print(f"  [{topic}] {len(qs)} Qs · {len(res.entries)} UK entries · "
