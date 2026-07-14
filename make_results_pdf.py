@@ -184,11 +184,11 @@ def build_html(rows, today):
       <div class="rule top"></div>
       <div class="titlegrid">
         <div class="tleft">
-          <h1>Reproducing RAG-based Machine Unlearning on the paper's real models</h1>
-          <p class="sub">A faithful re-implementation of <i>When Machine Unlearning Meets Retrieval
-            Augmented Generation: Keep Secret or Forget Knowledge?</i> Closed models are run through
-            OpenRouter and an open Llama-2-7b-chat locally, with GPT-4o as the confidentiality clause
-            writer and the success judge, over the paper's 100 topic concept set.</p>
+          <h1>A Faithful Reproduction of RAG-based Machine Unlearning</h1>
+          <p class="sub">Re-implementing the method of Wang et al. from scratch and evaluating it on the
+            paper's own models: GPT-4o, GPT-4o mini, GPT-4, and Gemini through OpenRouter, and a local
+            Llama-2-7b-chat, with GPT-4o as the confidentiality clause writer and the success judge,
+            across 100 concepts.</p>
         </div>
         <figure class="thumb">{pfig('paper_firstpage')}
           <figcaption>Wang, Zhu, Ye, Zhou. IEEE TDSC, vol. 23, 2026. arXiv:2410.15267.</figcaption></figure>
