@@ -53,9 +53,16 @@ class HFClient:
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ]
-        inputs = self._tok.apply_chat_template(
-            messages, add_generation_prompt=True, return_tensors="pt", return_dict=True
-        ).to(self._device)
+        # Some model mirrors (e.g. NousResearch/Llama-2-*) ship no chat_template;
+        # fall back to the Llama-2 [INST] format so generation still works faithfully.
+        if getattr(self._tok, "chat_template", None):
+            inputs = self._tok.apply_chat_template(
+                messages, add_generation_prompt=True, return_tensors="pt", return_dict=True
+            ).to(self._device)
+        else:
+            prompt = (f"<s>[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{user} [/INST]"
+                      if system else f"<s>[INST] {user} [/INST]")
+            inputs = self._tok(prompt, return_tensors="pt").to(self._device)
         input_len = inputs["input_ids"].shape[1]
         gen_kwargs = dict(
             max_new_tokens=self._cfg.max_tokens,
