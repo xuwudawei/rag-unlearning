@@ -458,7 +458,8 @@ b,.k{ color:var(--ink); }
 .slide.title h1{ font-size:39px; margin:6px 0 20px; }
 figure.thumb{ background:#fff; border:1px solid var(--rule); border-radius:8px; padding:9px; margin:0;
   box-shadow:0 16px 44px -24px rgba(20,49,94,.55); }
-figure.thumb .pfig{ width:100%; height:auto; max-height:412px; display:block; margin:0 auto; border:1px solid #eef0f4; }
+figure.thumb{ text-align:center; }
+figure.thumb .pfig{ max-height:412px; max-width:100%; width:auto; height:auto; display:inline-block; border:1px solid #eef0f4; }
 figure.thumb figcaption{ margin-top:8px; font-size:11px; color:var(--muted); text-align:center; }
 figure{ margin-top:20px; background:var(--panel); border:1px solid var(--rule); border-radius:10px; padding:22px 30px 16px; }
 figure.wide{ padding:18px 30px 14px; }
