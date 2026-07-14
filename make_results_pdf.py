@@ -182,11 +182,17 @@ def build_html(rows, today):
     # ---- 1 title ----
     s1 = f'''<section class="slide title">
       <div class="rule top"></div>
-      <h1>Reproducing RAG-based Machine Unlearning<br>on the paper's real models</h1>
-      <p class="sub">A faithful re-implementation of <i>When Machine Unlearning Meets Retrieval Augmented
-        Generation: Keep Secret or Forget Knowledge?</i> Closed models are run through OpenRouter and an
-        open Llama-2-7b-chat locally, with GPT-4o as the confidentiality clause writer and the success
-        judge, over the paper's 100 topic concept set.</p>
+      <div class="titlegrid">
+        <div class="tleft">
+          <h1>Reproducing RAG-based Machine Unlearning on the paper's real models</h1>
+          <p class="sub">A faithful re-implementation of <i>When Machine Unlearning Meets Retrieval
+            Augmented Generation: Keep Secret or Forget Knowledge?</i> Closed models are run through
+            OpenRouter and an open Llama-2-7b-chat locally, with GPT-4o as the confidentiality clause
+            writer and the success judge, over the paper's 100 topic concept set.</p>
+        </div>
+        <figure class="thumb">{pfig('paper_firstpage')}
+          <figcaption>Wang, Zhu, Ye, Zhou. IEEE TDSC, vol. 23, 2026. arXiv:2410.15267.</figcaption></figure>
+      </div>
       <div class="meta">
         <div><span class="k">Source paper</span> Wang, Zhu, Ye, Zhou. arXiv:2410.15267</div>
         <div><span class="k">Code</span> github.com/xuwudawei/rag-unlearning</div>
@@ -448,6 +454,12 @@ b,.k{ color:var(--ink); }
 .slide.title .meta{ position:absolute; bottom:74px; left:84px; display:flex; gap:44px; font-size:14px; color:var(--muted); }
 .slide.title .meta .k{ display:block; font-family:ui-monospace,monospace; font-size:11px; letter-spacing:.1em;
   text-transform:uppercase; color:var(--accent); margin-bottom:4px; }
+.titlegrid{ display:grid; grid-template-columns:1.5fr .95fr; gap:44px; align-items:start; margin-top:4px; }
+.slide.title h1{ font-size:39px; margin:6px 0 20px; }
+figure.thumb{ background:#fff; border:1px solid var(--rule); border-radius:8px; padding:9px; margin:0;
+  box-shadow:0 16px 44px -24px rgba(20,49,94,.55); }
+figure.thumb .pfig{ width:100%; height:auto; max-height:412px; display:block; margin:0 auto; border:1px solid #eef0f4; }
+figure.thumb figcaption{ margin-top:8px; font-size:11px; color:var(--muted); text-align:center; }
 figure{ margin-top:20px; background:var(--panel); border:1px solid var(--rule); border-radius:10px; padding:22px 30px 16px; }
 figure.wide{ padding:18px 30px 14px; }
 figure.paper{ background:#fff; padding:16px; }
